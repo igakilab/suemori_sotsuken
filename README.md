@@ -1,2 +1,0 @@
-# suemori_sotsuken
-
