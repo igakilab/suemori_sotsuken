@@ -1,0 +1,1 @@
+JavaScriptからDWR(Direct Web Remoting)を利用してJavaのメソッドを呼ぶ方法を実行できるようにした。
