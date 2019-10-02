@@ -7,16 +7,16 @@ canvas.height = 640;	//canvasの縦幅（たてはば）
 var ctx = canvas.getContext( '2d' );
  
 //りこちゃんのオブジェクトを作成
-var rico = new Object();
-rico.img = new Image();
-rico.img.src = 'img/rico.png';
-rico.x = 0;
-rico.y = 0;
-rico.move = 0;
+var tree = new Object();
+tree.img = new Image();
+tree.img.src = 'img/tree.png';
+tree.x = 0;
+tree.y = 0;
+tree.move = 0;
  
 //マップチップのImageオブジェクトを作る
 var mapchip = new Image();
-mapchip.src = 'img/map.png';
+mapchip.src = 'img/wb.png';
  
 //キーボードのオブジェクトを作成
 var key = new Object();
@@ -47,7 +47,7 @@ var map = [
 	[0, 0, 0, 1, 0, 1, 1, 1 ,1 ,1 ,0 ,1 ,0 ,1 ,1 ,0 ,0 ,0 ,1 ,0],
 	[0, 1, 1, 1, 0, 1, 0, 0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,1 ,1 ,0 ,1 ,1],
 	[0, 1, 0, 0, 0, 1, 0, 1 ,1 ,1 ,0 ,0 ,1 ,1 ,0 ,1 ,0 ,0 ,0 ,0],
-	[0, 0, 0, 1, 0, 0, 0, 1 ,1 ,1 ,1 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,0]
+	[0, 0, 0, 1, 0, 0, 0, 1 ,1 ,1 ,1 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1]
 ]
  
 //メインループ
@@ -65,49 +65,49 @@ function main() {
 	}
  
 	//画像を表示
-	ctx.drawImage( rico.img, rico.x, rico.y );
+	ctx.drawImage( tree.img, tree.x, tree.y );
  
 	addEventListener("keydown", keydownfunc, false);
 	addEventListener("keyup", keyupfunc, false);
  
 	//方向キーが押されている場合（ばあい）は、りこちゃんが移動する
-	if ( rico.move === 0 ) {
+	if ( tree.move === 0 ) {
 		if ( key.left === true ) {
-			var x = rico.x/32;
-			var y = rico.y/32;
+			var x = tree.x/32;
+			var y = tree.y/32;
 			x--;
 			if ( map[y][x] === 0 ) {
-				rico.move = 32;
+				tree.move = 32;
 				key.push = 'left';
 			}
 		}
 		if ( key.up === true ) {
-			var x = rico.x/32;
-			var y = rico.y/32;
+			var x = tree.x/32;
+			var y = tree.y/32;
 			if ( y > 0) {
 				y--;
 				if ( map[y][x] === 0 ) {
-					rico.move = 32;
+					tree.move = 32;
 					key.push = 'up';
 				}
 			}
 		}
 		if ( key.right === true ) {
-			var x = rico.x/32;
-			var y = rico.y/32;
+			var x = tree.x/32;
+			var y = tree.y/32;
 			x++;
 			if ( map[y][x] === 0 ) {
-				rico.move = 32;
+				tree.move = 32;
 				key.push = 'right';
 			}
 		}
 		if ( key.down === true ) {
-			var x = rico.x/32;
-			var y = rico.y/32;
+			var x = tree.x/32;
+			var y = tree.y/32;
 			if ( y < 19 ) {
 				y++;
 				if ( map[y][x] === 0 ) {
-					rico.move = 32;
+					tree.move = 32;
 					key.push = 'down';
 				}
 			}
@@ -115,12 +115,12 @@ function main() {
 	}
  
 	//rico.moveが0より大きい場合は、4pxずつ移動（いどう）を続ける
-	if (rico.move > 0) {
-		rico.move -= 4;
-		if ( key.push === 'left' ) rico.x -= 4;
-		if ( key.push === 'up' ) rico.y -= 4;
-		if ( key.push === 'right' ) rico.x += 4;
-		if ( key.push === 'down' ) rico.y += 4;
+	if (tree.move > 0) {
+		tree.move -= 4;
+		if ( key.push === 'left' ) tree.x -= 4;
+		if ( key.push === 'up' ) tree.y -= 4;
+		if ( key.push === 'right' ) tree.x += 4;
+		if ( key.push === 'down' ) tree.y += 4;
 	}
  
 	requestAnimationFrame( main );
