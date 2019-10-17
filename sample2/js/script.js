@@ -14,6 +14,10 @@ tree.x = 0;
 tree.y = 0;
 tree.move = 0;
 
+var cnt = 0; //方向キーを押した回数
+var max_cnt = 5; //方向キーを押せる回数
+var cnt_log = new Array(max_cnt);//どの方向キーを押したかを記録する配列
+
 //ボタン画像
 var up = new Object();
 var down = new Object();
@@ -76,12 +80,30 @@ function main() {
   ctx.lineTo(640, 640);
   ctx.stroke();
   //迷路の右枠
-  ctx.strokeRect(0, 0, 640, 640)
+  ctx.beginPath();
+  ctx.moveTo(640, 0);
+  ctx.lineTo(640, 640);
+  ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(100, 100);
-  ctx.lineTo(20, 640);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(640, 0);
   ctx.stroke();
+  //コマンド確認枠右側
+  ctx.beginPath();
+  ctx.moveTo(704, 0);
+  ctx.lineTo(704, 320);
+  ctx.stroke();
+  //コマンド確認枠内側
+  for (var x = 0; x < 6; x++) {
+    ctx.beginPath();
+    ctx.moveTo(640, 0 + x * 64);
+    ctx.lineTo(704, 0 + x * 64);
+    ctx.stroke();
+  }
+
+  //cnt確認のための表示
+
 
 
   for (var y = 0; y < map.length; y++) {
@@ -109,6 +131,7 @@ function main() {
       if (map[y][x] === 0) {
         tree.move = 32;
         key.push = 'left';
+
       }
     }
     if (key.up === true) {
@@ -119,6 +142,7 @@ function main() {
         if (map[y][x] === 0) {
           tree.move = 32;
           key.push = 'up';
+
         }
       }
     }
@@ -129,6 +153,7 @@ function main() {
       if (map[y][x] === 0) {
         tree.move = 32;
         key.push = 'right';
+
       }
     }
     if (key.down === true) {
@@ -139,6 +164,7 @@ function main() {
         if (map[y][x] === 0) {
           tree.move = 32;
           key.push = 'down';
+
         }
       }
     }
@@ -150,7 +176,10 @@ function main() {
     if (key.push === 'left') tree.x -= 4;
     if (key.push === 'up') tree.y -= 4;
     if (key.push === 'right') tree.x += 4;
-    if (key.push === 'down') tree.y += 4;
+    if (key.push === 'down') {
+      tree.y += 4;
+      cnt++;
+    }
   }
 
   requestAnimationFrame(main);
