@@ -15,8 +15,10 @@ tree.y = 0;
 tree.move = 0;
 
 var cnt = 0; //方向キーを押した回数
+var logcount = 0;
 var max_cnt = 5; //方向キーを押せる回数
-var cnt_log = new Array(max_cnt);//どの方向キーを押したかを記録する配列
+var cnt_log = new Array();//どの方向キーを押したかを記録する配列
+var aaa = new Array();
 
 //ボタン画像
 var up = new Object();
@@ -40,12 +42,18 @@ mapchip.src = 'img/wb.png';
 var red = new Image();
 red.src = 'img/red.png';
 
+//矢印画像のを削除するための画像
+var white = new Object();
+white.img = new Image();
+white.img.src = 'img/white.png';
+
 //キーボードのオブジェクトを作成
 var key = new Object();
 key.up = false;
 key.down = false;
 key.right = false;
 key.left = false;
+key.enter = false;
 key.push = '';
 
 //マップの作成（さくせい）
@@ -127,68 +135,240 @@ function main() {
   addEventListener("keydown", keydownfunc, false);
   addEventListener("keyup", keyupfunc, false);
 
-  //方向キーが押されている場合（ばあい）は、移動する
-  if (tree.move === 0) {
+  //方向キーが押されたら、配列cnt_logに記録する
+  if (key.enter === false) {
     if (key.left === true) {
-      var x = tree.x / 32;
-      var y = tree.y / 32;
-      x--;
-      if (map[y][x] === 0 || map[y][x] === 2) {
-        tree.move = 32;
-        key.push = 'left';
+      if (cnt < max_cnt) {
+        var x = tree.x / 32;
+        var y = tree.y / 32;
+        x--;
+        if (map[y][x] === 0 || map[y][x] === 2) {
+
+          key.push = 'left';
+          cnt_log.push(key.push);
+          console.log(cnt_log);
+          cnt++;
+          aaa.push(cnt);
+          console.log(aaa);
+        }
 
       }
     }
-    if (key.up === true) {
-      var x = tree.x / 32;
-      var y = tree.y / 32;
-      if (y > 0) {
-        y--;
-        if (map[y][x] === 0 || map[y][x] === 2) {
-          tree.move = 32;
-          key.push = 'up';
+    else if (key.up === true) {
+      if (cnt < max_cnt) {
+        var x = tree.x / 32;
+        var y = tree.y / 32;
+        if (y > 0) {
+          y--;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            key.push = 'up';
+            cnt_log.push(key.push);
+            console.log(cnt_log);
+            cnt++;
+            aaa.push(cnt);
+            console.log(aaa);
+          }
 
         }
       }
     }
-    if (key.right === true) {
-      var x = tree.x / 32;
-      var y = tree.y / 32;
-      x++;
-      if (map[y][x] === 0 || map[y][x] === 2) {
-        tree.move = 32;
-        key.push = 'right';
+    else if (key.right === true) {
+      if (cnt < max_cnt) {
+        var x = tree.x / 32;
+        var y = tree.y / 32;
+        x++;
+        if (map[y][x] === 0 || map[y][x] === 2) {
+
+          key.push = 'right';
+          cnt_log.push(key.push);
+          console.log(cnt_log);
+          cnt++;
+          aaa.push(cnt);
+          console.log(aaa);
+        }
 
       }
     }
-    if (key.down === true) {
-      var x = tree.x / 32;
-      var y = tree.y / 32;
-      if (y < 19) {
-        y++;
-        if (map[y][x] === 0 || map[y][x] === 2) {
-          tree.move = 32;
-          key.push = 'down';
+    else if (key.down === true) {
+      if (cnt < max_cnt) {
+        var x = tree.x / 32;
+        var y = tree.y / 32;
+        if (y < 19) {
+          y++;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+
+            key.push = 'down';
+            cnt_log.push(key.push);
+            console.log(cnt_log);
+            cnt++;
+            aaa.push(cnt);
+            console.log(aaa);
+
+          }
 
         }
       }
     }
   }
 
-  //0より大きい場合は、4pxずつ移動（いどう）を続ける
-  if (tree.move > 0) {
+  //キーボードを押した矢印を表示
+  if (cnt === 1) {
+    if (cnt_log[logcount] === 'up') {
+      ctx.drawImage(up.img, 640, 0);
+    }
+    if (cnt_log[logcount] === 'left') {
+      ctx.drawImage(left.img, 640, 0);
+    }
+    if (cnt_log[logcount] === 'right') {
+      ctx.drawImage(right.img, 640, 0);
+    }
+    if (cnt_log[logcount] === 'down') {
+      ctx.drawImage(down.img, 640, 0);
+    }
+  }
+
+  if (cnt === 2) {
+    if (cnt_log[logcount + 1] === 'up') {
+      ctx.drawImage(up.img, 640, 64);
+    }
+    if (cnt_log[logcount + 1] === 'left') {
+      ctx.drawImage(left.img, 640, 64);
+    }
+    if (cnt_log[logcount + 1] === 'right') {
+      ctx.drawImage(right.img, 640, 64);
+    }
+    if (cnt_log[logcount + 1] === 'down') {
+      ctx.drawImage(down.img, 640, 64);
+    }
+  }
+
+  if (cnt === 3) {
+    if (cnt_log[logcount + 2] === 'up') {
+      ctx.drawImage(up.img, 640, 128);
+    }
+    if (cnt_log[logcount + 2] === 'left') {
+      ctx.drawImage(left.img, 640, 128);
+    }
+    if (cnt_log[logcount + 2] === 'right') {
+      ctx.drawImage(right.img, 640, 128);
+    }
+    if (cnt_log[logcount + 2] === 'down') {
+      ctx.drawImage(down.img, 640, 128);
+    }
+  }
+
+  if (cnt === 4) {
+    if (cnt_log[logcount + 3] === 'up') {
+      ctx.drawImage(up.img, 640, 192);
+    }
+    if (cnt_log[logcount + 3] === 'left') {
+      ctx.drawImage(left.img, 640, 192);
+    }
+    if (cnt_log[logcount + 3] === 'right') {
+      ctx.drawImage(right.img, 640, 192);
+    }
+    if (cnt_log[logcount + 3] === 'down') {
+      ctx.drawImage(down.img, 640, 192);
+    }
+  }
+
+  if (cnt === 5) {
+    if (cnt_log[logcount + 4] === 'up') {
+      ctx.drawImage(up.img, 640, 256);
+    }
+    if (cnt_log[logcount + 4] === 'left') {
+      ctx.drawImage(left.img, 640, 256);
+    }
+    if (cnt_log[logcount + 4] === 'right') {
+      ctx.drawImage(right.img, 640, 256);
+    }
+    if (cnt_log[logcount + 4] === 'down') {
+      ctx.drawImage(down.img, 640, 256);
+    }
+  }
+
+
+  //cnt_logに格納された矢印の方向に進む
+  if (key.enter === true) {
+
+    for (var i = logcount; i < logcount + 5; i++) {
+      if (tree.move === 0) {
+        if (cnt_log[i] === 'left') {
+          var x = tree.x / 32;
+          var y = tree.y / 32;
+          x--;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            tree.move = 32;
+            key.push = 'left';
+
+          }
+
+        }
+
+        else if (cnt_log[i] === 'up') {
+          var x = tree.x / 32;
+          var y = tree.y / 32;
+          if (y > 0) {
+            y--;
+            if (map[y][x] === 0 || map[y][x] === 2) {
+              tree.move = 32;
+              key.push = 'up';
+
+            }
+
+          }
+        }
+
+        else if (cnt_log[i] === 'right') {
+          var x = tree.x / 32;
+          var y = tree.y / 32;
+          x++;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            tree.move = 32;
+            key.push = 'right';
+
+
+
+          }
+        }
+        else if (cnt_log[i] === 'down') {
+          var x = tree.x / 32;
+          var y = tree.y / 32;
+          if (y < 19) {
+            y++;
+            if (map[y][x] === 0 || map[y][x] === 2) {
+              tree.move = 32;
+              key.push = 'down';
+            }
+          }
+        }
+      }
+
+
+    }
+    key.enter = false;
+    logcount += cnt;
+    cnt = 0;
+    ctx.drawImage(white.img, 640, 0);
+    ctx.drawImage(white.img, 640, 64);
+    ctx.drawImage(white.img, 640, 128);
+    ctx.drawImage(white.img, 640, 192);
+    ctx.drawImage(white.img, 640, 256);
+
+    //0より大きい場合は、4pxずつ移動（いどう）を続ける
+
+
+  } if (tree.move > 0) {
     tree.move -= 4;
     if (key.push === 'left') tree.x -= 4;
     if (key.push === 'up') tree.y -= 4;
     if (key.push === 'right') tree.x += 4;
-    if (key.push === 'down') {
-      tree.y += 4;
-      cnt++;
-    }
+    if (key.push === 'down') tree.y += 4;
   }
 
   requestAnimationFrame(main);
 }
+
 //ページと依存（いぞん）している全てのデータが読み込まれたら、メインループ開始
 addEventListener('load', main(), false);
 
@@ -199,6 +379,7 @@ function keydownfunc(event) {
   if (key_code === 38) key.up = true;
   if (key_code === 39) key.right = true;
   if (key_code === 40) key.down = true;
+  if (key_code === 13) key.enter = true;
   event.preventDefault();		//方向キーでブラウザがスクロールしないようにする
 }
 
@@ -209,4 +390,5 @@ function keyupfunc(event) {
   if (key_code === 38) key.up = false;
   if (key_code === 39) key.right = false;
   if (key_code === 40) key.down = false;
+
 }
