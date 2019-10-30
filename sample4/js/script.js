@@ -50,9 +50,13 @@ left.img.src = 'img/left.png';
 right.img.src = 'img/right.png';
 des.img.src = 'img/black.png';
 
-//マップチップのImageオブジェクトを作る
-var mapchip = new Image();
-mapchip.src = 'img/wb.png';
+//マップのImageオブジェクトを作る
+
+var mapwhite = new Image();
+mapwhite.src = 'img/mass-white.png';
+
+var mapblack = new Image();
+mapblack.src = 'img/mass-black.png';
 
 //ゴールスタートの赤表示
 var red = new Image();
@@ -73,14 +77,17 @@ key.enter = false;
 key.player1 = true;
 key.player2 = false;
 
+
+
+
 //マップの作成（さくせい）
 var map = [
   [2, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
   [0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0],
   [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-  [1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0],
+  [1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0],
   [0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0],
-  [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0],
+  [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
   [0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0],
   [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0],
   [1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1],
@@ -96,6 +103,8 @@ var map = [
   [0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0],
   [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 2]
 ]
+
+
 
 //メインループ
 function main() {
@@ -148,11 +157,15 @@ function main() {
 
   for (var y = 0; y < map.length; y++) {
     for (var x = 0; x < map[y].length; x++) {
-      if (map[y][x] === 0) ctx.drawImage(mapchip, 0, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
-      if (map[y][x] === 1) ctx.drawImage(mapchip, 32, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
+      if (map[y][x] === 0) ctx.drawImage(mapwhite, 0, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
+      if (map[y][x] === 1) ctx.drawImage(mapblack, 0, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
       if (map[y][x] === 2) ctx.drawImage(red, 0, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
     }
   }
+
+
+
+
 
   //画像を表示
   ctx.drawImage(tree.img, tree.x1, tree.y1);
@@ -379,6 +392,9 @@ function main() {
     }
   }
 
+  //0,1判定の最小値、最大値の数字を格納する変数
+  var min1 = 0;
+  var max1 = 19;
   //cnt_logに格納された矢印の方向に進む
   if (cnt === max_cnt) {
     if (key.enter === true) {
@@ -387,7 +403,7 @@ function main() {
           if (key.player1 === true) {
             var x = tree.x1 / 32 - 3;
             var y = tree.y1 / 32;
-            if (x > 0 && x <= 19) {
+            if (x > min1 && x <= max1) {
               x--;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 tree.x1 -= 32;
@@ -397,7 +413,7 @@ function main() {
           if (key.player2 === true) {
             var x = ball.x1 / 32 - 3;
             var y = ball.y1 / 32;
-            if (x > 0 && x <= 19) {
+            if (x > min1 && x <= max1) {
               x--;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 ball.x1 -= 32;
@@ -410,7 +426,7 @@ function main() {
           if (key.player1 === true) {
             var x = tree.x1 / 32 - 3;
             var y = tree.y1 / 32;
-            if (y > 0 && y <= 19) {
+            if (y > min1 && y <= max1) {
               y--;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 tree.y1 -= 32;
@@ -420,7 +436,7 @@ function main() {
           if (key.player2 === true) {
             var x = ball.x1 / 32 - 3;
             var y = ball.y1 / 32;
-            if (y > 0 && y <= 19) {
+            if (y > min1 && y <= max1) {
               y--;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 ball.y1 -= 32;
@@ -432,7 +448,7 @@ function main() {
           if (key.player1 === true) {
             var x = tree.x1 / 32 - 3;
             var y = tree.y1 / 32;
-            if (x >= 0 && x < 19) {
+            if (x >= min1 && x < max1) {
               x++;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 tree.x1 += 32;
@@ -442,7 +458,7 @@ function main() {
           if (key.player2 === true) {
             var x = ball.x1 / 32 - 3;
             var y = ball.y1 / 32;
-            if (x >= 0 && y < 19) {
+            if (x >= min1 && y < max1) {
               x++;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 ball.x1 += 32;
@@ -454,7 +470,7 @@ function main() {
           if (key.player1 === true) {
             var x = tree.x1 / 32 - 3;
             var y = tree.y1 / 32;
-            if (y >= 0 && y < 19) {
+            if (y >= min1 && y < max1) {
               y++;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 tree.y1 += 32;
@@ -464,7 +480,7 @@ function main() {
           if (key.player2 === true) {
             var x = ball.x1 / 32 - 3;
             var y = ball.y1 / 32;
-            if (y >= 0 && y < 19) {
+            if (y >= min1 && y < max1) {
               y++;
               if (map[y][x] === 0 || map[y][x] === 2) {
                 ball.y1 += 32;
