@@ -1,0 +1,165 @@
+2019-10-28 17:21:21.155 JST [16264] LOG:  listening on IPv6 address "::1", port 5432
+2019-10-28 17:21:21.155 JST [16264] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2019-10-28 17:21:21.220 JST [9948] LOG:  database system was shut down at 2019-10-28 17:21:19 JST
+2019-10-28 17:21:21.294 JST [16264] LOG:  database system is ready to accept connections
+2019-10-28 17:21:23.619 JST [16264] LOG:  server process (PID 14868) was terminated by exception 0xC000013A
+2019-10-28 17:21:23.619 JST [16264] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:21:23.619 JST [16264] LOG:  terminating any other active server processes
+2019-10-28 17:21:23.621 JST [11924] WARNING:  terminating connection because of crash of another server process
+2019-10-28 17:21:23.621 JST [11924] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-28 17:21:23.621 JST [11924] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-28 17:21:23.642 JST [16264] LOG:  statistics collector process (PID 2628) was terminated by exception 0xC000013A
+2019-10-28 17:21:23.642 JST [16264] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:21:23.642 JST [16264] LOG:  all server processes terminated; reinitializing
+2019-10-28 17:21:23.704 JST [14176] LOG:  database system was interrupted; last known up at 2019-10-28 17:21:21 JST
+2019-10-28 17:21:24.022 JST [14176] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-28 17:21:24.025 JST [14176] LOG:  invalid record length at 0/1628578: wanted 24, got 0
+2019-10-28 17:21:24.025 JST [14176] LOG:  redo is not required
+2019-10-28 17:21:24.096 JST [16264] LOG:  database system is ready to accept connections
+2019-10-28 17:21:25.364 JST [16264] LOG:  worker process: logical replication launcher (PID 16184) was terminated by exception 0xC000013A
+2019-10-28 17:21:25.364 JST [16264] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:21:25.364 JST [16264] LOG:  terminating any other active server processes
+2019-10-28 17:21:25.365 JST [2208] WARNING:  terminating connection because of crash of another server process
+2019-10-28 17:21:25.365 JST [2208] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-28 17:21:25.365 JST [2208] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-28 17:21:25.378 JST [16264] LOG:  statistics collector process (PID 10604) was terminated by exception 0xC000013A
+2019-10-28 17:21:25.378 JST [16264] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:21:25.378 JST [16264] LOG:  received fast shutdown request
+^C2019-10-28 17:22:28.128 JST [17324] LOG:  listening on IPv6 address "::1", port 5432
+2019-10-28 17:22:28.128 JST [17324] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2019-10-28 17:22:28.188 JST [1028] LOG:  database system was interrupted; last known up at 2019-10-28 17:21:24 JST
+2019-10-28 17:22:28.500 JST [1028] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-28 17:22:28.502 JST [1028] LOG:  invalid record length at 0/16285E8: wanted 24, got 0
+2019-10-28 17:22:28.503 JST [1028] LOG:  redo is not required
+2019-10-28 17:22:28.572 JST [17324] LOG:  database system is ready to accept connections
+2019-10-28 17:29:58.567 JST [17324] LOG:  server process (PID 5752) was terminated by exception 0xC000013A
+2019-10-28 17:29:58.567 JST [17324] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:29:58.567 JST [17324] LOG:  terminating any other active server processes
+2019-10-28 17:29:58.570 JST [8276] WARNING:  terminating connection because of crash of another server process
+2019-10-28 17:29:58.570 JST [8276] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-28 17:29:58.570 JST [8276] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-28 17:29:58.575 JST [17324] LOG:  statistics collector process (PID 8864) was terminated by exception 0xC000013A
+2019-10-28 17:29:58.575 JST [17324] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:29:58.589 JST [17324] LOG:  all server processes terminated; reinitializing
+2019-10-28 17:29:58.641 JST [17316] LOG:  database system was interrupted; last known up at 2019-10-28 17:22:28 JST
+2019-10-28 17:29:59.003 JST [17316] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-28 17:29:59.008 JST [17316] LOG:  redo starts at 0/1628658
+2019-10-28 17:29:59.008 JST [17316] LOG:  invalid record length at 0/1628690: wanted 24, got 0
+2019-10-28 17:29:59.008 JST [17316] LOG:  redo done at 0/1628658
+2019-10-28 17:29:59.070 JST [17324] LOG:  database system is ready to accept connections
+2019-10-28 17:30:00.075 JST [17324] LOG:  worker process: logical replication launcher (PID 9032) was terminated by exception 0xC000013A
+2019-10-28 17:30:00.075 JST [17324] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-28 17:30:00.075 JST [17324] LOG:  terminating any other active server processes
+2019-10-28 17:30:00.077 JST [17080] WARNING:  terminating connection because of crash of another server process
+2019-10-28 17:30:00.077 JST [17080] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-28 17:30:00.077 JST [17080] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-28 17:30:00.095 JST [17324] LOG:  statistics collector process (PID 15000) was terminated by exception 0xC000013A
+2019-10-28 17:30:00.095 JST [17324] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+^C2019-10-30 21:56:57.995 JST [9628] LOG:  listening on IPv6 address "::1", port 5432
+2019-10-30 21:56:57.995 JST [9628] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2019-10-30 21:56:58.057 JST [8520] LOG:  database system was interrupted; last known up at 2019-10-28 17:29:59 JST
+2019-10-30 21:56:59.511 JST [8520] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-30 21:56:59.536 JST [8520] LOG:  invalid record length at 0/1628700: wanted 24, got 0
+2019-10-30 21:56:59.536 JST [8520] LOG:  redo is not required
+2019-10-30 21:56:59.595 JST [9628] LOG:  database system is ready to accept connections
+2019-10-30 22:04:32.753 JST [5148] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2019-10-30 22:07:08.226 JST [4008] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2019-10-30 22:07:10.550 JST [9628] LOG:  server process (PID 6740) was terminated by exception 0xC000013A
+2019-10-30 22:07:10.550 JST [9628] DETAIL:  Failed process was running: select * from food;
+2019-10-30 22:07:10.550 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:10.550 JST [9628] LOG:  terminating any other active server processes
+2019-10-30 22:07:10.552 JST [12508] WARNING:  terminating connection because of crash of another server process
+2019-10-30 22:07:10.552 JST [12508] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-30 22:07:10.552 JST [12508] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-30 22:07:10.583 JST [9628] LOG:  all server processes terminated; reinitializing
+2019-10-30 22:07:10.628 JST [14304] LOG:  database system was interrupted; last known up at 2019-10-30 22:02:20 JST
+2019-10-30 22:07:11.100 JST [14304] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-30 22:07:11.104 JST [14304] LOG:  redo starts at 0/16408B8
+2019-10-30 22:07:11.104 JST [14304] LOG:  invalid record length at 0/1640998: wanted 24, got 0
+2019-10-30 22:07:11.104 JST [14304] LOG:  redo done at 0/1640960
+2019-10-30 22:07:11.165 JST [9628] LOG:  database system is ready to accept connections
+2019-10-30 22:07:11.193 JST [9628] LOG:  worker process: logical replication launcher (PID 13952) was terminated by exception 0xC000013A
+2019-10-30 22:07:11.193 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:11.193 JST [9628] LOG:  terminating any other active server processes
+2019-10-30 22:07:11.202 JST [9628] LOG:  statistics collector process (PID 10704) was terminated by exception 0xC000013A
+2019-10-30 22:07:11.202 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:11.222 JST [9628] LOG:  all server processes terminated; reinitializing
+2019-10-30 22:07:11.271 JST [6976] LOG:  database system was interrupted; last known up at 2019-10-30 22:07:11 JST
+2019-10-30 22:07:11.786 JST [6976] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-30 22:07:11.789 JST [6976] LOG:  invalid record length at 0/1640A08: wanted 24, got 0
+2019-10-30 22:07:11.789 JST [6976] LOG:  redo is not required
+2019-10-30 22:07:11.836 JST [9628] LOG:  database system is ready to accept connections
+2019-10-30 22:07:11.926 JST [9628] LOG:  worker process: logical replication launcher (PID 12884) was terminated by exception 0xC000013A
+2019-10-30 22:07:11.926 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:11.926 JST [9628] LOG:  terminating any other active server processes
+2019-10-30 22:07:11.929 JST [9184] WARNING:  terminating connection because of crash of another server process
+2019-10-30 22:07:11.929 JST [9184] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-30 22:07:11.929 JST [9184] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-30 22:07:11.939 JST [9628] LOG:  statistics collector process (PID 268) was terminated by exception 0xC000013A
+2019-10-30 22:07:11.939 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:11.957 JST [9628] LOG:  all server processes terminated; reinitializing
+2019-10-30 22:07:11.998 JST [14932] LOG:  database system was interrupted; last known up at 2019-10-30 22:07:11 JST
+2019-10-30 22:07:12.411 JST [14932] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-30 22:07:12.415 JST [14932] LOG:  invalid record length at 0/1640A78: wanted 24, got 0
+2019-10-30 22:07:12.415 JST [14932] LOG:  redo is not required
+2019-10-30 22:07:12.472 JST [9628] LOG:  database system is ready to accept connections
+2019-10-30 22:07:12.896 JST [9628] LOG:  worker process: logical replication launcher (PID 1516) was terminated by exception 0xC000013A
+2019-10-30 22:07:12.896 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:12.896 JST [9628] LOG:  terminating any other active server processes
+2019-10-30 22:07:12.898 JST [10044] WARNING:  terminating connection because of crash of another server process
+2019-10-30 22:07:12.898 JST [10044] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-30 22:07:12.898 JST [10044] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-30 22:07:12.935 JST [9628] LOG:  statistics collector process (PID 6560) was terminated by exception 0xC000013A
+2019-10-30 22:07:12.935 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:12.935 JST [9628] LOG:  all server processes terminated; reinitializing
+2019-10-30 22:07:12.979 JST [13716] LOG:  database system was interrupted; last known up at 2019-10-30 22:07:12 JST
+2019-10-30 22:07:13.355 JST [13716] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-30 22:07:13.359 JST [13716] LOG:  invalid record length at 0/1640AE8: wanted 24, got 0
+2019-10-30 22:07:13.359 JST [13716] LOG:  redo is not required
+2019-10-30 22:07:13.412 JST [9628] LOG:  database system is ready to accept connections
+2019-10-30 22:07:13.535 JST [9628] LOG:  worker process: logical replication launcher (PID 10520) was terminated by exception 0xC000013A
+2019-10-30 22:07:13.535 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:13.535 JST [9628] LOG:  terminating any other active server processes
+2019-10-30 22:07:13.538 JST [15048] WARNING:  terminating connection because of crash of another server process
+2019-10-30 22:07:13.538 JST [15048] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-30 22:07:13.538 JST [15048] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-30 22:07:13.541 JST [9628] LOG:  statistics collector process (PID 15328) was terminated by exception 0xC000013A
+2019-10-30 22:07:13.541 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:13.566 JST [9628] LOG:  all server processes terminated; reinitializing
+2019-10-30 22:07:13.620 JST [892] LOG:  database system was interrupted; last known up at 2019-10-30 22:07:13 JST
+2019-10-30 22:07:13.926 JST [9628] LOG:  startup process (PID 892) was terminated by exception 0xC000013A
+2019-10-30 22:07:13.926 JST [9628] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-30 22:07:13.926 JST [9628] LOG:  aborting startup due to startup process failure
+^C2019-10-31 01:29:40.438 JST [15832] LOG:  listening on IPv6 address "::1", port 5432
+2019-10-31 01:29:40.438 JST [15832] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2019-10-31 01:29:40.674 JST [16872] LOG:  database system was interrupted; last known up at 2019-10-30 22:07:13 JST
+2019-10-31 01:29:41.590 JST [16872] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-31 01:29:41.598 JST [16872] LOG:  invalid record length at 0/1640B58: wanted 24, got 0
+2019-10-31 01:29:41.598 JST [16872] LOG:  redo is not required
+2019-10-31 01:29:41.671 JST [15832] LOG:  database system is ready to accept connections
+2019-10-31 01:35:20.344 JST [15832] LOG:  server process (PID 16792) was terminated by exception 0xC000013A
+2019-10-31 01:35:20.344 JST [15832] DETAIL:  Failed process was running: COMMIT
+2019-10-31 01:35:20.344 JST [15832] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-31 01:35:20.344 JST [15832] LOG:  terminating any other active server processes
+2019-10-31 01:35:20.347 JST [4840] WARNING:  terminating connection because of crash of another server process
+2019-10-31 01:35:20.347 JST [4840] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-31 01:35:20.347 JST [4840] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-31 01:35:20.363 JST [15832] LOG:  all server processes terminated; reinitializing
+2019-10-31 01:35:20.407 JST [17044] LOG:  database system was interrupted; last known up at 2019-10-31 01:29:41 JST
+2019-10-31 01:35:20.883 JST [17044] LOG:  database system was not properly shut down; automatic recovery in progress
+2019-10-31 01:35:20.888 JST [17044] LOG:  redo starts at 0/1640BC8
+2019-10-31 01:35:20.888 JST [17044] LOG:  invalid record length at 0/1640C00: wanted 24, got 0
+2019-10-31 01:35:20.888 JST [17044] LOG:  redo done at 0/1640BC8
+2019-10-31 01:35:20.945 JST [15832] LOG:  database system is ready to accept connections
+2019-10-31 01:35:23.565 JST [15832] LOG:  worker process: logical replication launcher (PID 5700) was terminated by exception 0xC000013A
+2019-10-31 01:35:23.565 JST [15832] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-31 01:35:23.565 JST [15832] LOG:  terminating any other active server processes
+2019-10-31 01:35:23.566 JST [14956] WARNING:  terminating connection because of crash of another server process
+2019-10-31 01:35:23.566 JST [14956] DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
+2019-10-31 01:35:23.566 JST [14956] HINT:  In a moment you should be able to reconnect to the database and repeat your command.
+2019-10-31 01:35:23.568 JST [15832] LOG:  statistics collector process (PID 9556) was terminated by exception 0xC000013A
+2019-10-31 01:35:23.568 JST [15832] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2019-10-31 01:35:23.569 JST [15832] LOG:  received fast shutdown request
+^C
