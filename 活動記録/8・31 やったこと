@@ -1,0 +1,4 @@
+multiple-dwrのvscode版の準備をした.
+
+ターミナル画面でgradle init --type java-applicationを入力するとエラーが起きた。
+多分パスがうまく通ってないと思われる。
