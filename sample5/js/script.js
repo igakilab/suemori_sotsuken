@@ -32,7 +32,7 @@ bom.img.src = 'img/bom.png'
 
 var bomcnt = 0;
 var bom2cnt = 0;
-var bomcnt_max = 2;
+var bomcnt_max = 5;
 
 
 var cnt = 0; //方向キーを押した回数
@@ -87,6 +87,10 @@ key.bom = false;
 key.bom2 = false;
 key.player1 = true;
 key.player2 = false;
+
+//0,1判定の最小値、最大値の数字を格納する変数
+var min1 = 0;
+var max1 = 19;
 
 
 
@@ -209,25 +213,22 @@ function main() {
   //player1bom
   ctx.fillText(bomtext, 10, 450);
   ctx.fillText(bomcnt_max - bomcnt, 40, 470);
-  if (bomcnt === 1) {
+  for(var i = bomcnt; i <= bomcnt_max; i++){
+  if (bomcnt === i) {
     ctx.drawImage(white.img, 20, 450);
     ctx.fillText(bomcnt_max - bomcnt, 40, 470);
   }
-  if (bomcnt === 2) {
-    ctx.drawImage(white.img, 20, 450);
-    ctx.fillText(bomcnt_max - bomcnt, 40, 470);
-  }
+}
   //player2bom
   ctx.fillText(bomtext, 738, 450);
   ctx.fillText(bomcnt_max - bom2cnt, 765, 470);
-  if (bomcnt === 1) {
+  for(var i = bom2cnt; i <= bomcnt_max; i++){
+  if (bom2cnt === i) {
     ctx.drawImage(white.img, 745, 450);
     ctx.fillText(bomcnt_max - bom2cnt, 765, 470);
   }
-  if (bomcnt === 2) {
-    ctx.drawImage(white.img, 745, 450);
-    ctx.fillText(bomcnt_max - bom2cnt, 765, 470);
-  }
+}
+
 
 
 
@@ -358,154 +359,28 @@ function main() {
     }
   }
 
-  //0,1判定の最小値、最大値の数字を格納する変数
-  var min1 = 0;
-  var max1 = 19;
+  
   //cnt_logに格納された矢印の方向に進む
   if (cnt === max_cnt) {
     if (key.enter === true) {
       for (var i = 0; i < 5; i++) {
-        if (cnt_log[i] === 'left') {
-          if (key.player1 === true) {
-            var x = tree.x1 / 32 - 3;
-            var y = tree.y1 / 32;
-            if (x > min1 && x <= max1) {
-              x--;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                tree.x1 -= 32;
-              }
-            }
-          }
-          if (key.player2 === true) {
-            var x = ball.x1 / 32 - 3;
-            var y = ball.y1 / 32;
-            if (x > min1 && x <= max1) {
-              x--;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                ball.x1 -= 32;
-              }
-            }
-          }
-        }
-
-        else if (cnt_log[i] === 'up') {
-          if (key.player1 === true) {
-            var x = tree.x1 / 32 - 3;
-            var y = tree.y1 / 32;
-            if (y > min1 && y <= max1) {
-              y--;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                tree.y1 -= 32;
-              }
-            }
-          }
-          if (key.player2 === true) {
-            var x = ball.x1 / 32 - 3;
-            var y = ball.y1 / 32;
-            if (y > min1 && y <= max1) {
-              y--;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                ball.y1 -= 32;
-              }
-            }
-          }
-        }
-        else if (cnt_log[i] === 'right') {
-          if (key.player1 === true) {
-            var x = tree.x1 / 32 - 3;
-            var y = tree.y1 / 32;
-            if (x >= min1 && x < max1) {
-              x++;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                tree.x1 += 32;
-              }
-            }
-          }
-          if (key.player2 === true) {
-            var x = ball.x1 / 32 - 3;
-            var y = ball.y1 / 32;
-            if (x >= min1 && y < max1) {
-              x++;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                ball.x1 += 32;
-              }
-            }
-          }
-        }
-        else if (cnt_log[i] === 'down') {
-          if (key.player1 === true) {
-            var x = tree.x1 / 32 - 3;
-            var y = tree.y1 / 32;
-            if (y >= min1 && y < max1) {
-              y++;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                tree.y1 += 32;
-              }
-            }
-          }
-          if (key.player2 === true) {
-            var x = ball.x1 / 32 - 3;
-            var y = ball.y1 / 32;
-            if (y >= min1 && y < max1) {
-              y++;
-              if (map[y][x] === 0 || map[y][x] === 2) {
-                ball.y1 += 32;
-              }
-            }
-          }
-        }
-
-        else if (cnt_log[i] === 'bom') {
-          if (key.player1 === true) {
-            var x = tree.x1 / 32 - 3;
-            var y = tree.y1 / 32;
-            if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
-              if (map[y][x - 1] === 1) {
-                map[y][x - 1] = 0;
-              }
-              if (map[y][x + 1] === 1) {
-                map[y][x + 1] = 0;
-
-              }
-            }
-          }
-        }
-        else if (cnt_log[i] === 'bom2') {
-          if (key.player2 === true) {
-            var x = ball.x1 / 32 - 3;
-            var y = ball.y1 / 32;
-            if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
-              if (map[y][x - 1] === 1) {
-                map[y][x - 1] = 0;
-              }
-              if (map[y][x + 1] === 1) {
-                map[y][x + 1] = 0;
-              }
-            }
-          }
-        }
-      }
-
+        if (cnt_log[i] === 'left') 
+           goLeft();
+        else if (cnt_log[i] === 'up') 
+           goUp();
+        else if (cnt_log[i] === 'right') 
+           goRight();
+        else if (cnt_log[i] === 'down') 
+           goDown();
+        else if (cnt_log[i] === 'bom') 
+           goBom();
+        else if (cnt_log[i] === 'bom2') 
+           goBom();
+    }
       cnt_log = [];
       key.enter = false;
       cnt = 0;
-      if (key.player1 === true) {
-        ctx.clearRect(40, 8, 50, 50);
-        ctx.clearRect(40, 72, 50, 50);
-        ctx.clearRect(40, 136, 50, 50);
-        ctx.clearRect(40, 200, 50, 50);
-        ctx.clearRect(40, 264, 50, 50);
-        ctx.clearRect(40, 328, 50, 50);
-      }
-
-      if (key.player2 === true) {
-        ctx.clearRect(744, 8, 50, 50);
-        ctx.clearRect(744, 72, 50, 50);
-        ctx.clearRect(744, 136, 50, 50);
-        ctx.clearRect(744, 200, 50, 50);
-        ctx.clearRect(744, 264, 50, 50);
-        ctx.clearRect(744, 328, 50, 50);
-      }
+      clear();
       if (tree.x1 === 704 && tree.y1 === 608) {
         document.write('Player1のゴールです。')
       }
@@ -534,8 +409,12 @@ function mousedownfunc1(event) {
   if (x >= 850 && x <= 914 && y >= 550 && y <= 614) key.right = true;
   if (x >= 800 && x <= 864 && y >= 600 && y <= 664) key.down = true;
   if (x >= 800 && x <= 850 && y >= 550 && y <= 600) key.enter = true;
+  if (key.player1 ===true){
   if (x >= 25 && x <= 75 && y >= 378 && y <= 428) key.bom = true;
+  }
+  if (key.player2 ===true){
   if (x >= 750 && x <= 800 && y >= 378 && y <= 428) key.bom2 = true;
+  }
 }
 
 //クリックが終わった後にに呼び出される関数
@@ -546,8 +425,12 @@ function mouseupfunc1(event) {
   if (x >= 800 && x <= 864 && y >= 500 && y <= 564) key.up = false;
   if (x >= 850 && x <= 914 && y >= 550 && y <= 614) key.right = false;
   if (x >= 800 && x <= 864 && y >= 600 && y <= 664) key.down = false;
+  if (key.player1 ===true){
   if (x >= 25 && x <= 75 && y >= 378 && y <= 428) key.bom = false;
+  }
+  if (key.player2 ===true){
   if (x >= 750 && x <= 800 && y >= 378 && y <= 428) key.bom2 = false;
+  }
 }
 
 function hanten() {
@@ -564,3 +447,125 @@ function hanten() {
 
   }
 }
+
+function clear(){
+  if (key.player1 === true) {
+    ctx.clearRect(40, 8, 50, 50);
+    ctx.clearRect(40, 72, 50, 50);
+    ctx.clearRect(40, 136, 50, 50);
+    ctx.clearRect(40, 200, 50, 50);
+    ctx.clearRect(40, 264, 50, 50);
+    ctx.clearRect(40, 328, 50, 50);
+    return;
+  }
+  else if (key.player2 === true) {
+     ctx.clearRect(744, 8, 50, 50);
+     ctx.clearRect(744, 72, 50, 50);
+     ctx.clearRect(744, 136, 50, 50);
+     ctx.clearRect(744, 200, 50, 50);
+     ctx.clearRect(744, 264, 50, 50);
+     ctx.clearRect(744, 328, 50, 50);
+    return;
+  }
+}
+
+function goLeft(){
+  if(key.player1===true){
+  var x = tree.x1 / 32 - 3;
+  var y = tree.y1 / 32;
+  }
+  if(key.player2 ===true){
+  var x = ball.x1 / 32 - 3;
+  var y = ball.y1 / 32;
+  }
+  if (x > min1 && x <= max1) {
+    x--;
+    if (map[y][x] === 0 || map[y][x] === 2) {
+      if(key.player1===true)
+      tree.x1 -= 32;
+      if(key.player2 ===true)
+      ball.x1 -= 32;
+    }
+  }
+}
+
+function goUp(){
+  if(key.player1===true){
+    var x = tree.x1 / 32 - 3;
+    var y = tree.y1 / 32;
+    }
+    if(key.player2 ===true){
+    var x = ball.x1 / 32 - 3;
+    var y = ball.y1 / 32;
+    }
+  if (y > min1 && y <= max1) {
+    y--;
+    if (map[y][x] === 0 || map[y][x] === 2) {
+      if(key.player1===true)
+      tree.y1 -= 32;
+      if(key.player2 ===true)
+      ball.y1 -= 32;
+    }
+  }
+}
+
+function goRight(){
+  if(key.player1===true){
+    var x = tree.x1 / 32 - 3;
+    var y = tree.y1 / 32;
+    }
+    if(key.player2 ===true){
+    var x = ball.x1 / 32 - 3;
+    var y = ball.y1 / 32;
+    }
+  if (x >= min1 && x < max1) {
+    x++;
+    if (map[y][x] === 0 || map[y][x] === 2) {
+      if(key.player1===true)
+      tree.x1 += 32;
+      if(key.player2 ===true)
+      ball.x1 += 32;
+    }
+  }
+}
+
+function goDown(){
+  if(key.player1===true){
+    var x = tree.x1 / 32 - 3;
+    var y = tree.y1 / 32;
+    }
+    if(key.player2 ===true){
+    var x = ball.x1 / 32 - 3;
+    var y = ball.y1 / 32;
+    }
+  if (y >= min1 && y < max1) {
+     y++;
+    if (map[y][x] === 0 || map[y][x] === 2) {
+      if(key.player1===true)
+        tree.y1 += 32;
+      if(key.player2 ===true)
+        ball.y1 += 32;
+    }
+  }
+}
+
+function goBom(){
+  if(key.player1===true){
+    var x = tree.x1 / 32 - 3;
+    var y = tree.y1 / 32;
+    }
+    if(key.player2 ===true){
+    var x = ball.x1 / 32 - 3;
+    var y = ball.y1 / 32;
+    }
+  if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
+    if (map[y][x - 1] === 1) {
+      map[y][x - 1] = 0;
+    }
+    if (map[y][x + 1] === 1) {
+      map[y][x + 1] = 0;
+
+   }
+  }
+  return;
+ }  
