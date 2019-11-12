@@ -24,6 +24,19 @@
   border-bottom: solid 4px #956286;
 }
 
+.player {
+  background: #d1c3c9;
+  border-bottom: solid 4px #979296;
+}
+
+.bomb {
+  position: absolute;
+  color: red;
+  top: 25px;
+  font-size: 28px;
+  left: 16px;
+}
+
 /* .btn-real-dent {
   display: inline-block;
   position: relative;

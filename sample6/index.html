@@ -18,9 +18,8 @@
       <div id="player1select3" class="frame_stroke_rect"></div>
       <div id="player1select4" class="frame_stroke_rect"></div>
       <div id="player1select5" class="frame_stroke_rect"></div>
-      <div style="margin-top: 20px;" class="btn-square player1">1P</div>
-      <div style="margin-top: 20px;"><i class="fas fa-bomb fa-4x bomb" style="cursor: pointer;"></i></div>
-      <!-- <div style="text-align: center;">Bomb 5</div> -->
+      <div id="player1button" style="margin-top: 20px;" class="btn-square player1">1P</div>
+      <div style="margin-top: 20px;"><i class="fas fa-bomb fa-4x" style="cursor: pointer; position: relative;"><div id="player1bomb" class="bomb">5</div></i></div>
     </div>
     <div style="float: left; border: solid 1px #000; margin-right: 20px;">
       <canvas id="canvas" style="vertical-align: bottom; margin: 0; padding: 0;"></canvas>
@@ -31,33 +30,36 @@
       <div id="player2select3" class="frame_stroke_rect"></div>
       <div id="player2select4" class="frame_stroke_rect"></div>
       <div id="player2select5" class="frame_stroke_rect"></div>
-      <div style="margin-top: 20px;" class="btn-square player2">2P</div>
-      <div style="margin-top: 20px;"><i class="fas fa-bomb fa-4x bomb" style="cursor: pointer;"></i></div>
-      <!-- <div style="text-align: center;">Bomb 5</div> -->
+      <div id="player2button" style="margin-top: 20px;" class="btn-square player2">2P</div>
+      <div style="margin-top: 20px;"><i class="fas fa-bomb fa-4x" style="cursor: pointer; position: relative;"><div id="player2bomb" class="bomb">5</div></i></div>
       <table style="margin-top: 10px;">
         <tbody>
           <tr>
             <td></td>
             <td>
-              <button id="arrowUp" class="btn-real-dent">
+              <button id="arrowUp" class="btn-real-dent" title="上へ進む">
                 <i class="fas fa-arrow-alt-circle-up fa-3x" style="cursor: pointer;"></i>
               </button>
             </td>
-            <td></td>
+            <td>
+              <button id="bomb" class="btn-real-dent" title="爆弾を設置する">
+                <i class="fas fa-bomb fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
           </tr>
           <tr>
             <td>
-              <button id="arrowLeft" class="btn-real-dent">
+              <button id="arrowLeft" class="btn-real-dent" title="左へ進む">
                 <i class="fas fa-arrow-alt-circle-left fa-3x" style="cursor: pointer;"></i>
               </button>
             </td>
             <td style="text-align:center;">
-              <button id="selectCheck" class="btn-real-dent">
+              <button id="selectCheck" class="btn-real-dent" title="行動を終了する">
                 <i class="fas fa-check-square fa-3x" style="cursor: pointer;"></i>
               </button>
             </td>
             <td>
-              <button id="arrowRight" class="btn-real-dent">
+              <button id="arrowRight" class="btn-real-dent" title="右へ進む">
                 <i class="fas fa-arrow-alt-circle-right fa-3x" style="cursor: pointer;"></i>
               </button>
             </td>
@@ -65,11 +67,15 @@
           <tr>
             <td></td>
             <td>
-              <button id="arrowDown" class="btn-real-dent">
+              <button id="arrowDown" class="btn-real-dent" title="下へ進む">
                 <i class="fas fa-arrow-alt-circle-down fa-3x" style="cursor: pointer;"></i>
               </button>
             </td>
-            <td></td>
+            <td>
+              <button id="redo" class="btn-real-dent" title="一つ前に戻る">
+                <i class="fas fa-redo fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
