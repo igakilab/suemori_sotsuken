@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="igakilab.mybatis.BomberMapper">
+  <select id="selectcom" resultType="jp.igakilab.dwr.bomber.Information">
+    select username, pointx, pointy, com1, com2, com3, com4, com5 from sample1;
+  </select>
+  <insert id="insertcom">
+    insert into sample1 (username, pointx, pointy, com1, com2, com3, com4, com5)
+    values (#{username}, #{pointx}, #{pointy}, #{com1}, #{com2}, #{com3}, #{com4}, #{com5})
+  </insert>
+</mapper>

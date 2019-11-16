@@ -1,0 +1,14 @@
+bomber=# create table sample1(username varchar(80), pointx int, pointy int, com1 varchar(80), com2 varchar(80), com3 varchar(80), com4 varchar(80), com5 varchar(80));
+CREATE TABLE
+bomber=# insert into sample1(username, pointx, pointy, com1, com2, com3, com4, com5)  VALUES ('sue', 0, 0, 'up', 'down', 'left', 'right');
+ERROR:  INSERT has more target columns than expressions
+LINE 1: ...username, pointx, pointy, com1, com2, com3, com4, com5)  VAL...
+                                                             ^
+bomber=# insert into sample1(username, pointx, pointy, com1, com2, com3, com4, com5)  VALUES ('sue', 0, 0, 'up', 'down', 'left', 'right', 'bomb');
+INSERT 0 1
+bomber=# select * from sample1;
+ username | pointx | pointy | com1 | com2 | com3 | com4  | com5
+----------+--------+--------+------+------+------+-------+------
+ sue      |      0 |      0 | up   | down | left | right | bomb
+(1 çs)
+
