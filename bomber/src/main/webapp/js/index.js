@@ -137,7 +137,7 @@ $(() => {
 
   $('#redo').click(() => {
     preMove(true)
-    if(select.pop() === 'bomb') {
+    if (select.pop() === 'bomb') {
       const point = movePoint()
       $(`#player${turn ? 1 : 2}bomb`).text((turn ? player1 : player2).bomb - point.bomb.length)
     }

@@ -16,6 +16,12 @@
     <create creator="new" javascript="Command">
       <param name="class" value="jp.igakilab.dwr.bomber.Command"/>
     </create>
+    <create creator="new" javascript="Login">
+      <param name="class" value="jp.igakilab.dwr.bomber.Login"/>
+    </create>
+    <create creator="new" javascript="Logcheck">
+      <param name="class" value="jp.igakilab.dwr.bomber.Logcheck"/>
+    </create>
     <convert converter="bean" match="jp.igakilab.dwr.bomber.*" />
   </allow>
 </dwr>

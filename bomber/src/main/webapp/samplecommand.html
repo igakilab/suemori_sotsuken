@@ -10,95 +10,89 @@
   <script type="text/javascript" src="js/jquery-3.4.1.slim.min.js"></script>
   <script type="text/javascript" src="js/jquery.serialize.js"></script>
   <script type="text/javascript" src="dwr/interface/Command.js"></script>
-  <script type="text/javascript">
-
-    var Array = [];
-    var cnt = 0;
-    var cntmax = 5;
-    function update() {
-      Command.execute({
-        callback: function (data) {
-          $('#error_message').text("");
-          console.log(data);
-          var Info_text = "";
-          data.forEach(function (Info) {
-            Info_text = Info_text + "[name]" + Info.username + "[x座標]" + Info.pointx + "[y座標]" + Info.pointy + "<br/>" + "[com1]" + Info.com1 + "[com2]" + Info.com2 + "[com3]" + Info.com3 + "[com4]" + Info.com4 + "[com5]" + Info.com5 + "<br/>";
-          });
-          $('#pprinterReply').html(Info_text);
-        },
-        errorHandler: updateErrorMessage
-      });
-    }
-
-    function updateErrorMessage(message, exception) {
-      $('#error_message').text(message);
-      $('#pprinterReply').text("");
-    }
-
-    function insertCommand() {
-      if (cnt === cntmax) {
-        var x1 = Array[0];
-        var x2 = Array[1];
-        var x3 = Array[2];
-        var x4 = Array[3];
-        var x5 = Array[4];
-        var commandArray = [{ username: "user1", pointx: 32, pointy: 32, com1: x1, com2: x2, com3: x3, com4: x4, com5: x5 }]
-        Command.insertcom(commandArray, {
-          callback: function () {
-            console.log("insert_command実行完了")
-          },
-          errorHandler: updateErrorMessage
-
-        });
-      }
-      cnt = 0;
-    }
-    function insertup() {
-      if (cnt < cntmax) {
-        Array.push("up");
-        console.log("insert_up実行完了")
-        cnt++;
-      }
-    }
-    function insertright() {
-      if (cnt < cntmax) {
-        Array.push("right");
-        console.log("insert_right実行完了")
-        cnt++;
-      }
-    }
-    function insertleft() {
-      if (cnt < cntmax) {
-        Array.push("left");
-        console.log("insert_left実行完了")
-        cnt++;
-      }
-    }
-    function insertdown() {
-      if (cnt < cntmax) {
-        Array.push("down");
-        console.log("insert_down実行完了")
-        cnt++;
-      }
-    }
-    function insertbomb() {
-      if (cnt < cntmax) {
-        Array.push("bomb");
-        console.log("insert_bomb実行完了")
-        cnt++;
-      }
-    }
-
-
-
-  </script>
+  <script type="text/javascript" src="js/index.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <title>BomberMan</title>
 </head>
 
 <body>
+  <div>
+    <div style="float: left; margin-right: 20px;">
+      <div id="player1select1" class="frame_stroke_rect"></div>
+      <div id="player1select2" class="frame_stroke_rect"></div>
+      <div id="player1select3" class="frame_stroke_rect"></div>
+      <div id="player1select4" class="frame_stroke_rect"></div>
+      <div id="player1select5" class="frame_stroke_rect"></div>
+      <div id="player1button" style="margin-top: 20px;" class="btn-square player1">1P</div>
+      <div style="margin-top: 20px;"><i class="fas fa-bomb fa-4x" style="cursor: pointer; position: relative;">
+          <div id="player1bomb" class="bomb">5</div>
+        </i></div>
+    </div>
+    <div style="float: left; border: solid 1px #000; margin-right: 20px;">
+      <canvas id="canvas" style="vertical-align: bottom; margin: 0; padding: 0;"></canvas>
+    </div>
+    <div style="float: left;">
+      <div id="player2select1" class="frame_stroke_rect"></div>
+      <div id="player2select2" class="frame_stroke_rect"></div>
+      <div id="player2select3" class="frame_stroke_rect"></div>
+      <div id="player2select4" class="frame_stroke_rect"></div>
+      <div id="player2select5" class="frame_stroke_rect"></div>
+      <div id="player2button" style="margin-top: 20px;" class="btn-square player2">2P</div>
+      <div style="margin-top: 20px;"><i class="fas fa-bomb fa-4x" style="cursor: pointer; position: relative;">
+          <div id="player2bomb" class="bomb">5</div>
+        </i></div>
+      <table style="margin-top: 10px;">
+        <tbody>
+          <tr>
+            <td></td>
+            <td>
+              <button id="arrowUp" class="btn-real-dent" title="上へ進む" onclick="insertup()">
+                <i class="fas fa-arrow-alt-circle-up fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+            <td>
+              <button id="bomb" class="btn-real-dent" title="爆弾を設置する" onclick="insertbomb()">
+                <i class="fas fa-bomb fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <button id="arrowLeft" class="btn-real-dent" title="左へ進む" onclick="insertleft()">
+                <i class="fas fa-arrow-alt-circle-left fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+            <td style="text-align:center;">
+              <button id="selectCheck" class="btn-real-dent" title="行動を終了する" onclick="insertCommand()">
+                <i class="fas fa-check-square fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+            <td>
+              <button id="arrowRight" class="btn-real-dent" title="右へ進む" onclick="insertright()">
+                <i class="fas fa-arrow-alt-circle-right fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <button id="arrowDown" class="btn-real-dent" title="下へ進む" onclick="insertdown()">
+                <i class="fas fa-arrow-alt-circle-down fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+            <td>
+              <button id="redo" class="btn-real-dent" title="一つ前に戻る" onclick="removecom()">
+                <i class="fas fa-redo fa-3x" style="cursor: pointer;"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <p>
     <form id="pprinter_form">
       <input value="GetFoodList" type="button" onclick="update()" />
-      <input value="InsertArray" type="button" onclick="insertCommand()" />
     </form>
   </p>
   <p>
@@ -107,51 +101,103 @@
   <p>
     <span id="error_message" class="error"></span>
   </p>
-  <tbody>
-    <tr>
-      <td></td>
-      <td>
-        <button id="arrowUp" class="btn-real-dent" title="上へ進む" onclick="insertup()">
-          <i class="fas fa-arrow-alt-circle-up fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-      <td>
-        <button id="bomb" class="btn-real-dent" title="爆弾を設置する" onclick="insertbomb()">
-          <i class="fas fa-bomb fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <button id="arrowLeft" class="btn-real-dent" title="左へ進む" onclick="insertleft()">
-          <i class="fas fa-arrow-alt-circle-left fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-      <td style="text-align:center;">
-        <button id="selectCheck" class="btn-real-dent" title="行動を終了する" onclick="insertCommand()">
-          <i class="fas fa-check-square fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-      <td>
-        <button id="arrowRight" class="btn-real-dent" title="右へ進む" onclick="insertright()">
-          <i class="fas fa-arrow-alt-circle-right fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td>
-        <button id="arrowDown" class="btn-real-dent" title="下へ進む" onclick="insertdown()">
-          <i class="fas fa-arrow-alt-circle-down fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-      <td>
-        <button id="redo" class="btn-real-dent" title="一つ前に戻る">
-          <i class="fas fa-redo fa-3x" style="cursor: pointer;"></i>
-        </button>
-      </td>
-    </tr>
-  </tbody>
 </body>
+
+<script type="text/javascript">
+
+  var Array = [];
+  var cnt = 0;
+  var cntmax = 5;
+  function update() {
+    Command.execute({
+      callback: function (data) {
+        $('#error_message').text("");
+        console.log(data);
+        var Info_text = "";
+        data.forEach(function (Info) {
+          Info_text = Info_text + "[name]" + Info.username + "[x座標]" + Info.pointx + "[y座標]" + Info.pointy + "<br/>" + "[com1]" + Info.com1 + "[com2]" + Info.com2 + "[com3]" + Info.com3 + "[com4]" + Info.com4 + "[com5]" + Info.com5 + "<br/>";
+        });
+        $('#pprinterReply').html(Info_text);
+      },
+      errorHandler: updateErrorMessage
+    });
+  }
+
+  function updateErrorMessage(message, exception) {
+    $('#error_message').text(message);
+    $('#pprinterReply').text("");
+  }
+
+  function insertCommand() {
+    if (cnt === cntmax) {
+      var x1 = Array[0];
+      var x2 = Array[1];
+      var x3 = Array[2];
+      var x4 = Array[3];
+      var x5 = Array[4];
+      var commandArray = [{ username: "user1", pointx: 32, pointy: 32, com1: x1, com2: x2, com3: x3, com4: x4, com5: x5 }]
+      Command.insertcom(commandArray, {
+        callback: function () {
+          console.log("insert_command実行完了")
+        },
+        errorHandler: updateErrorMessage
+
+      });
+    }
+    cnt = 0;
+    Array = [];
+  }
+  function insertup() {
+    if (cnt < cntmax) {
+      Array.push("up");
+      console.log("insert_up実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertright() {
+    if (cnt < cntmax) {
+      Array.push("right");
+      console.log("insert_right実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertleft() {
+    if (cnt < cntmax) {
+      Array.push("left");
+      console.log("insert_left実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertdown() {
+    if (cnt < cntmax) {
+      Array.push("down");
+      console.log("insert_down実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertbomb() {
+    if (cnt < cntmax) {
+      Array.push("bomb");
+      console.log("insert_bomb実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+
+  function removecom() {
+    if (cnt > 0 && cnt < 6) {
+      Array.splice(cnt - 1, 1);
+      console.log(Array)
+      cnt--;
+    }
+  }
+
+
+
+</script>
 
 </html>
