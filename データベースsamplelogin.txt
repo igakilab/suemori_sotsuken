@@ -1,0 +1,12 @@
+bomber=# create table samplelogin(name varchar(10), passward varchar(10));
+CREATE TABLE
+bomber=# insert into samplelogin(name,passward) VALUES('user1', 'aaa');
+INSERT 0 1
+bomber=# insert into samplelogin(name,passward) VALUES('user2', 'bbb');
+INSERT 0 1
+bomber=# select * from samplelogin;
+ name  | passward
+-------+----------
+ user1 | aaa
+ user2 | bbb
+(2 çs)
