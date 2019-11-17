@@ -23,7 +23,7 @@ public class Logcheck {
     for (Userinfo u : userList) {
       if (name.equals(u.getName())) {
         if (passward.equals(u.getPassward())) {
-          result = "auth";
+          result = "OK";
           break;
         }
       }
@@ -34,6 +34,6 @@ public class Logcheck {
 
   public static void main(String[] args) {
     Logcheck uic = new Logcheck();
-    System.out.println(uic.execute("igaki", "igakilab"));
+    uic.execute("sue", "sue1");
   }
 }

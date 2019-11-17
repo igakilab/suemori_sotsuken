@@ -19,9 +19,37 @@
     },
     {
       "type": "java",
+      "name": "Debug (Launch)-User1com<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.User1com",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-User2com<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.User2com",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
       "name": "Debug (Launch)-Logcheck<bomber>",
       "request": "launch",
       "mainClass": "jp.igakilab.dwr.bomber.Logcheck",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Updatecom2<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Updatecom2",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Getcom2<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Getcom2",
       "projectName": "bomber"
     },
     {

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-language" content="ja">
+  <meta charset="UTF-8">
+  <canvas id="canvas"></canvas>
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script type="text/javascript" src="dwr/engine.js"></script>
+  <script type="text/javascript" src="dwr/util.js"></script>
+  <script type="text/javascript" src="js/jquery-3.4.1.slim.min.js"></script>
+  <script type="text/javascript" src="js/jquery.serialize.js"></script>
+  <script src="js/jquery.cookie.min.js"></script>
+  <script type="text/javascript" src="dwr/interface/User1com.js"></script>
+  <script type="text/javascript" src="dwr/interface/User2com.js"></script>
+  <script type="text/javascript" src="dwr/interface/Updatecom2.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <title>BomberMan</title>
+</head>
+
+<body>
+  <div>
+    <table style="margin-top: 10px;">
+      <tbody>
+        <tr>
+          <td></td>
+          <td>
+            <button id="arrowUp" class="btn-real-dent" title="上へ進む" onclick="insertup()">
+              <i class="fas fa-arrow-alt-circle-up fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="bomb" class="btn-real-dent" title="爆弾を設置する" onclick="insertbomb()">
+              <i class="fas fa-bomb fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button id="arrowLeft" class="btn-real-dent" title="左へ進む" onclick="insertleft()">
+              <i class="fas fa-arrow-alt-circle-left fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td style="text-align:center;">
+            <button id="selectCheck" class="btn-real-dent" title="行動を終了する" onclick="insertCommand()">
+              <i class="fas fa-check-square fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="arrowRight" class="btn-real-dent" title="右へ進む" onclick="insertright()">
+              <i class="fas fa-arrow-alt-circle-right fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <button id="arrowDown" class="btn-real-dent" title="下へ進む" onclick="insertdown()">
+              <i class="fas fa-arrow-alt-circle-down fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="redo" class="btn-real-dent" title="一つ前に戻る" onclick="removecom()">
+              <i class="fas fa-redo fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <form id="pprinter_form">
+      <input value="Send" type="button" onclick="update()" />
+    </form>
+  </p>
+
+</body>
+
+<script type="text/javascript">
+
+  var canvas = document.getElementById('canvas');
+  canvas.width = 1200;		//canvasの横幅（よこはば）
+  canvas.height = 500;	//canvasの縦幅（たてはば）
+
+  //コンテキストを取得（しゅとく）
+  var ctx = canvas.getContext('2d');
+  var bom = new Object();
+  bom.img = new Image();
+  bom.img.src = 'img/bom.png'
+  var up = new Object();
+  var down = new Object();
+  var left = new Object();
+  var right = new Object();
+  up.img = new Image();
+  down.img = new Image();
+  left.img = new Image();
+  right.img = new Image();
+  up.img.src = 'img/up.png';
+  down.img.src = 'img/down.png';
+  left.img.src = 'img/left.png';
+  right.img.src = 'img/right.png';
+  var Array = [];//出力矢印を格納する配列
+  var cnt = 0;
+  var cntmax = 5;
+  var i = 0;//相手プレイヤーであるuser2の入力矢印のsqlの場所を示す
+  var j = 0;//相手プレイヤーであるuser1の入力矢印のsqlの場所を示す
+
+  //コマンド確認枠右
+  ctx.beginPath();
+  ctx.moveTo(800, 0);
+  ctx.lineTo(800, 320);
+  ctx.stroke();
+  //コマンド確認枠右内側
+  for (var x = 0; x < 6; x++) {
+    ctx.beginPath();
+    ctx.moveTo(736, 0 + x * 64);
+    ctx.lineTo(800, 0 + x * 64);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(736, 0);
+  ctx.lineTo(736, 320);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(32, 0);
+  ctx.lineTo(32, 320);
+  ctx.stroke();
+  //コマンド確認枠左
+  ctx.beginPath();
+  ctx.moveTo(96, 0);
+  ctx.lineTo(96, 320);
+  ctx.stroke();
+  //コマンド確認枠左内側
+  for (var x = 0; x < 6; x++) {
+    ctx.beginPath();
+    ctx.moveTo(32, 0 + x * 64);
+    ctx.lineTo(96, 0 + x * 64);
+    ctx.stroke();
+  }
+
+
+  function update() {
+    var user = $.cookie('name');
+    if (user == "user1") {
+      User1com.execute({
+        callback: function (data) {
+          console.log(data);
+          const list = data.map(obj => obj.com6);
+          console.log(list[0]);
+          const list1 = data.map(obj => obj.com7);
+          console.log(list1[0]);
+          const list2 = data.map(obj => obj.com8);
+          console.log(list2[0]);
+          const list3 = data.map(obj => obj.com9);
+          console.log(list3[0]);
+          const list4 = data.map(obj => obj.com10);
+          console.log(list4[0]);
+          var res1x = 744;
+          var resy = 8;
+          console.log(i);
+
+          if (list[i] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list[i] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list[i] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list[i] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list[i] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 72;
+          if (list1[i] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list1[i] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list1[i] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list1[i] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list1[i] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 136;
+          if (list2[i] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list2[i] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list2[i] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list2[i] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list2[i] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 200;
+          if (list3[i] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list3[i] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list3[i] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list3[i] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list3[i] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 264;
+          if (list4[i] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list4[i] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list4[i] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list4[i] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list4[i] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          i++;
+
+        },
+      });
+    }
+    if (user == "user2") {
+      User2com.execute({
+        callback: function (data) {
+          console.log(data);
+          const list = data.map(obj => obj.com1);
+          console.log(list[0]);
+          const list1 = data.map(obj => obj.com2);
+          console.log(list1[0]);
+          const list2 = data.map(obj => obj.com3);
+          console.log(list2[0]);
+          const list3 = data.map(obj => obj.com4);
+          console.log(list3[0]);
+          const list4 = data.map(obj => obj.com5);
+          console.log(list4[0]);
+          var res1x = 744;
+          var resy = 8;
+          console.log(j);
+
+          if (list[j] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list[j] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list[j] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list[j] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list[j] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 72;
+          if (list1[j] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list1[j] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list1[j] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list1[j] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list1[j] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 136;
+          if (list2[j] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list2[j] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list2[j] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list2[j] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list2[j] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 200;
+          if (list3[j] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list3[j] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list3[j] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list3[j] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list3[j] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          resy = 264;
+          if (list4[j] === "up")
+            ctx.drawImage(up.img, res1x, resy);
+          if (list4[j] === "left")
+            ctx.drawImage(left.img, res1x, resy);
+          if (list4[j] === "right")
+            ctx.drawImage(right.img, res1x, resy);
+          if (list4[j] === "down")
+            ctx.drawImage(down.img, res1x, resy);
+          if (list4[j] === "bom")
+            ctx.drawImage(bom.img, res1x, resy);
+          j++;
+
+        },
+      });
+    }
+  }
+
+  function updateErrorMessage(message, exception) {
+    $('#error_message').text(message);
+    $('#pprinterReply').text("");
+  }
+
+  function insertCommand() {
+    if (cnt === cntmax) {
+      var user = $.cookie('name');
+      var res1x = 40;
+      for (var i = 0; i < 5; i++) {
+        var resy = i * 64 + 8;
+        if (Array[i] === 'up') {
+          ctx.drawImage(up.img, res1x, resy);
+        }
+        if (Array[i] === 'left') {
+          ctx.drawImage(left.img, res1x, resy);
+        }
+        if (Array[i] === 'right') {
+          ctx.drawImage(right.img, res1x, resy);
+        }
+        if (Array[i] === 'down') {
+          ctx.drawImage(down.img, res1x, resy);
+        }
+        if (Array[i] === 'bom') {
+          ctx.drawImage(bom.img, res1x, resy);
+        }
+
+
+      }
+      var x1 = Array[0];
+      var x2 = Array[1];
+      var x3 = Array[2];
+      var x4 = Array[3];
+      var x5 = Array[4];
+      if (user == "user1") {
+        var command1Array = [{ com1: x1, com2: x2, com3: x3, com4: x4, com5: x5 }]
+        User1com.insertcom1(command1Array, {
+          callback: function () {
+            console.log("insert_command1実行完了")
+          },
+          errorHandler: updateErrorMessage
+
+        });
+      }
+      cnt = 0;
+      Array = [];
+      if (user == "user2") {
+        var command2Array = [{ com6: x1, com7: x2, com8: x3, com9: x4, com10: x5 }]
+        User2com.insertcom2(command2Array, {
+          callback: function () {
+            console.log("insert_command2実行完了")
+          },
+          errorHandler: updateErrorMessage
+
+        });
+      }
+      cnt = 0;
+      Array = [];
+    }
+  }
+
+
+
+  function insertup() {
+    if (cnt < cntmax) {
+      Array.push("up");
+      var user = $.cookie('name');
+      if (user == "user1")
+        console.log("insert_up1実行完了")
+      if (user == "user2")
+        console.log("insert_up2実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertright() {
+    if (cnt < cntmax) {
+      Array.push("right");
+      var user = $.cookie('name');
+      if (user == "user1")
+        console.log("insert_right1実行完了")
+      if (user == "user2")
+        console.log("insert_right2実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertleft() {
+    if (cnt < cntmax) {
+      Array.push("left");
+      var user = $.cookie('name');
+      if (user == "user1")
+        console.log("insert_left1実行完了")
+      if (user == "user2")
+        console.log("insert_left2実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertdown() {
+    if (cnt < cntmax) {
+      Array.push("down");
+      var user = $.cookie('name');
+      if (user == "user1")
+        console.log("insert_down1実行完了")
+      if (user == "user2")
+        console.log("insert_down2実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+  function insertbomb() {
+    if (cnt < cntmax) {
+      Array.push("bom");
+      var user = $.cookie('name');
+      if (user == "user1")
+        console.log("insert_bom1実行完了")
+      if (user == "user2")
+        console.log("insert_bom2実行完了")
+      cnt++;
+      console.log(Array)
+    }
+  }
+
+  function removecom() {
+    if (cnt > 0 && cnt < 6) {
+      Array.splice(cnt - 1, 1);
+      console.log(Array)
+      cnt--;
+    }
+  }
+
+
+
+
+
+</script>
+
+</html>
