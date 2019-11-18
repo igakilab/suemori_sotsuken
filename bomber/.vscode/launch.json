@@ -54,6 +54,20 @@
     },
     {
       "type": "java",
+      "name": "Debug (Launch)-Loc1<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Loc1",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Loc2<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Loc2",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
       "name": "Debug (Launch)-ProductPrinter<bomber>",
       "request": "launch",
       "mainClass": "jp.igakilab.dwr.mybatis.ProductPrinter",

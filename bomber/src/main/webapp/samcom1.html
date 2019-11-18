@@ -70,7 +70,7 @@
   </div>
   <p>
     <form id="pprinter_form">
-      <input value="Send" type="button" onclick="update()" />
+      <input value="return" type="button" onclick="update()" />
     </form>
   </p>
 
@@ -102,8 +102,8 @@
   var Array = [];//出力矢印を格納する配列
   var cnt = 0;
   var cntmax = 5;
-  var i = 0;//相手プレイヤーであるuser2の入力矢印のsqlの場所を示す
-  var j = 0;//相手プレイヤーであるuser1の入力矢印のsqlの場所を示す
+  var i = -1;//相手プレイヤーであるuser2の入力矢印のsqlの場所を示す
+  var j = -1;//相手プレイヤーであるuser1の入力矢印のsqlの場所を示す
 
   //コマンド確認枠右
   ctx.beginPath();
@@ -214,10 +214,11 @@
             ctx.drawImage(down.img, res1x, resy);
           if (list4[i] === "bom")
             ctx.drawImage(bom.img, res1x, resy);
-          i++;
+
 
         },
       });
+      i++;
     }
     if (user == "user2") {
       User2com.execute({
@@ -291,10 +292,11 @@
             ctx.drawImage(down.img, res1x, resy);
           if (list4[j] === "bom")
             ctx.drawImage(bom.img, res1x, resy);
-          j++;
+
 
         },
       });
+      j++;
     }
   }
 
@@ -344,7 +346,10 @@
       }
       cnt = 0;
       Array = [];
+
+
       if (user == "user2") {
+
         var command2Array = [{ com6: x1, com7: x2, com8: x3, com9: x4, com10: x5 }]
         User2com.insertcom2(command2Array, {
           callback: function () {

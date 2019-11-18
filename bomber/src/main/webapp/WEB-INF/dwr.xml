@@ -31,6 +31,12 @@
        <create creator="new" javascript="Getcom2">
       <param name="class" value="jp.igakilab.dwr.bomber.Getcom2"/>
       </create>
+       <create creator="new" javascript="Loc1">
+      <param name="class" value="jp.igakilab.dwr.bomber.Loc1"/>
+      </create>
+       <create creator="new" javascript="Loc2">
+      <param name="class" value="jp.igakilab.dwr.bomber.Loc2"/>
+      </create>
     <convert converter="bean" match="jp.igakilab.dwr.bomber.*" />
   </allow>
 </dwr>

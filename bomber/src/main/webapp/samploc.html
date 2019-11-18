@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-language" content="ja">
+  <meta charset="UTF-8">
+  <canvas id="canvas"></canvas>
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script type="text/javascript" src="dwr/engine.js"></script>
+  <script type="text/javascript" src="dwr/util.js"></script>
+  <script type="text/javascript" src="js/jquery-3.4.1.slim.min.js"></script>
+  <script type="text/javascript" src="js/jquery.serialize.js"></script>
+  <script src="js/jquery.cookie.min.js"></script>
+  <script type="text/javascript" src="dwr/interface/Loc1.js"></script>
+  <script type="text/javascript" src="dwr/interface/Loc2.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <title>BomberMan</title>
+</head>
+
+<body>
+  <div>
+    <table style="margin-top: 10px;">
+      <tbody>
+        <tr>
+          <td></td>
+          <td>
+            <button id="arrowUp" class="btn-real-dent" title="上へ進む" onclick="insertup()">
+              <i class="fas fa-arrow-alt-circle-up fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="bomb" class="btn-real-dent" title="爆弾を設置する" onclick="insertbomb()">
+              <i class="fas fa-bomb fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button id="arrowLeft" class="btn-real-dent" title="左へ進む" onclick="insertleft()">
+              <i class="fas fa-arrow-alt-circle-left fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td style="text-align:center;">
+            <button id="selectCheck" class="btn-real-dent" title="行動を終了する" onclick="insertLoc()">
+              <i class="fas fa-check-square fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="arrowRight" class="btn-real-dent" title="右へ進む" onclick="insertright()">
+              <i class="fas fa-arrow-alt-circle-right fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <button id="arrowDown" class="btn-real-dent" title="下へ進む" onclick="insertdown()">
+              <i class="fas fa-arrow-alt-circle-down fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="redo" class="btn-real-dent" title="一つ前に戻る" onclick="removecom()">
+              <i class="fas fa-redo fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <form id="pprinter_form">
+      <input value="return" type="button" onclick="update()" />
+    </form>
+  </p>
+
+</body>
+
+<script type="text/javascript">
+  var canvas = document.getElementById('canvas');
+  canvas.width = 1200;		//canvasの横幅（よこはば）
+  canvas.height = 500;	//canvasの縦幅（たてはば）
+
+  //コンテキストを取得（しゅとく）
+  var ctx = canvas.getContext('2d');
+  var tree = new Object();
+  tree.img = new Image();
+  tree.img.src = 'img/tree.png';
+  tree.x1 = 96;
+  tree.y1 = 0;
+
+  //player2
+  var ball = new Object();
+  ball.img = new Image();
+  ball.img.src = 'img/ball.png';
+  ball.x1 = 704;
+  ball.y1 = 0;
+
+
+  var mapwhite = new Image();
+  mapwhite.src = 'img/mass-white.png';
+
+  var mapblack = new Image();
+  mapblack.src = 'img/mass-black.png';
+
+  var map = [
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0],
+    [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    [1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0],
+    [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0],
+    [1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0],
+    [1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+    [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1],
+    [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+    [1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0],
+    [0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1],
+    [0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0]
+  ]
+
+
+
+  //メインループ
+  function main() {
+    //塗（ぬ）りつぶす色を指定（してい）
+    ctx.fillStyle = "rgb( 0, 0, 0 )";
+    //塗（ぬ）りつぶす
+    ctx.fillRect(96, 0, 640, 640);
+    //迷路の下枠
+    ctx.beginPath();
+    ctx.moveTo(96, 640);
+    ctx.lineTo(736, 640);
+    ctx.stroke();
+    //迷路の右枠
+    ctx.beginPath();
+    ctx.moveTo(736, 0);
+    ctx.lineTo(736, 640);
+    ctx.stroke();
+    //迷路左枠
+    ctx.beginPath();
+    ctx.moveTo(96, 0);
+    ctx.lineTo(96, 640);
+    ctx.stroke();
+
+    for (var y = 0; y < map.length; y++) {
+      for (var x = 0; x < map[y].length; x++) {
+        if (map[y][x] === 0) ctx.drawImage(mapwhite, 0, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
+        if (map[y][x] === 1) ctx.drawImage(mapblack, 0, 0, 32, 32, 32 * (x + 3), 32 * y, 32, 32);
+      }
+    }
+
+
+
+
+
+    //画像を表示
+    ctx.drawImage(tree.img, tree.x1, tree.y1);
+    ctx.drawImage(ball.img, ball.x1, ball.y1);
+    requestAnimationFrame(main);
+
+  }
+
+  //ページと依存（いぞん）している全てのデータが読み込まれたら、メインループ開始
+  addEventListener('load', main(), false);
+
+  var i = -1;
+  var j = -1;
+  var min1 = 0;
+  var max1 = 19;
+  var cnt1 = 0;
+  var cnt2 = 0;
+  var cnt_max = 5;
+
+  function update() {
+    var user = $.cookie('name');
+    if (user == "user1") {
+      Loc1.execute({
+        callback: function (data) {
+          console.log(data);
+          const list = data.map(obj => obj.point2x);
+          console.log(list[i]);
+          const list1 = data.map(obj => obj.point2y);
+          console.log(list1[i]);
+          ball.x1 = list[i];
+          ball.y1 = list1[i]
+        },
+      });
+      i++;
+    }
+    if (user == "user2") {
+      Loc2.execute({
+        callback: function (data) {
+          console.log(data);
+          const list = data.map(obj => obj.point1x);
+          console.log(list[j]);
+          const list1 = data.map(obj => obj.point1y);
+          console.log(list1[j]);
+          tree.x1 = list[j];
+          tree.y1 = list1[j];
+
+        },
+      });
+      j++;
+    }
+  }
+
+  function updateErrorMessage(message, exception) {
+    $('#error_message').text(message);
+    $('#pprinterReply').text("");
+  }
+
+  function insertLoc() {
+    var user = $.cookie('name');
+    if (cnt1 === cnt_max) {
+      if (user == "user1") {
+        var loc1Array = [{ point1x: tree.x1, point1y: tree.y1 }]
+        Loc1.insertLoc1(loc1Array, {
+          callback: function () {
+            console.log("insert_loc1実行完了")
+          },
+          errorHandler: updateErrorMessage
+
+        });
+      }
+      cnt1 = 0;
+    }
+    if (cnt2 === cnt_max) {
+      if (user == "user2") {
+        var loc2Array = [{ point2x: ball.x1, point2y: ball.y1 }]
+        Loc2.insertLoc2(loc2Array, {
+          callback: function () {
+            console.log("insert_loc2実行完了")
+          },
+          errorHandler: updateErrorMessage
+
+        });
+      }
+      cnt2 = 0;
+    }
+  }
+
+
+
+
+  function insertup() {
+    var user = $.cookie('name');
+    if (user === "user1") {
+      if (cnt1 < cnt_max) {
+        var x = tree.x1 / 32 - 3;
+        var y = tree.y1 / 32;
+        if (y > min1 && y <= max1) {
+          y--;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            tree.y1 -= 32;
+            cnt1++;
+            console.log(cnt1);
+          }
+        }
+      }
+    }
+    if (user === "user2") {
+      if (cnt2 < cnt_max) {
+        var x = ball.x1 / 32 - 3;
+        var y = ball.y1 / 32;
+        if (y > min1 && y <= max1) {
+          y--;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            ball.y1 -= 32;
+            cnt2++;
+            console.log(cnt2);
+          }
+        }
+      }
+    }
+  }
+  function insertright() {
+    var user = $.cookie('name');
+    if (user === "user1") {
+      if (cnt1 < cnt_max) {
+        var x = tree.x1 / 32 - 3;
+        var y = tree.y1 / 32;
+        if (x >= min1 && x < max1) {
+          x++;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            tree.x1 += 32;
+            cnt1++;
+            console.log(cnt1);
+          }
+        }
+      }
+    }
+    if (user === "user2") {
+      if (cnt2 < cnt_max) {
+        var x = ball.x1 / 32 - 3;
+        var y = ball.y1 / 32;
+        if (x >= min1 && x < max1) {
+          x++;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            ball.x1 += 32;
+            cnt2++;
+            console.log(cnt2);
+          }
+        }
+      }
+    }
+  }
+  function insertleft() {
+    var user = $.cookie('name');
+    if (user === "user1") {
+      if (cnt1 < cnt_max) {
+        var x = tree.x1 / 32 - 3;
+        var y = tree.y1 / 32;
+        if (x > min1 && x <= max1) {
+          x--;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            tree.x1 -= 32;
+            cnt1++;
+            console.log(cnt1);
+          }
+        }
+      }
+    }
+    if (user === "user2") {
+      if (cnt2 < cnt_max) {
+        var x = ball.x1 / 32 - 3;
+        var y = ball.y1 / 32;
+        if (x > min1 && x <= max1) {
+          x--;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            ball.x1 -= 32;
+            cnt2++;
+            console.log(cnt2);
+          }
+        }
+      }
+    }
+  }
+
+  function insertdown() {
+    var user = $.cookie('name');
+    if (user === "user1") {
+      if (cnt1 < cnt_max) {
+        var x = tree.x1 / 32 - 3;
+        var y = tree.y1 / 32;
+        if (y >= min1 && y < max1) {
+          y++;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            tree.y1 += 32;
+            cnt1++;
+            console.log(cnt1);
+          }
+        }
+      }
+    }
+    if (user === "user2") {
+      if (cnt2 < cnt_max) {
+        var x = ball.x1 / 32 - 3;
+        var y = ball.y1 / 32;
+        if (y >= min1 && y < max1) {
+          y++;
+          if (map[y][x] === 0 || map[y][x] === 2) {
+            ball.y1 += 32;
+            cnt2++;
+            console.log(cnt2);
+          }
+        }
+      }
+    }
+  }
+  function insertbomb() {
+    var user = $.cookie('name');
+    if (user === "user1") {
+      if (cnt1 < cnt_max) {
+        var x = tree.x1 / 32 - 3;
+        var y = tree.y1 / 32;
+        if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
+          if (map[y][x - 1] === 1) {
+            map[y][x - 1] = 0;
+          }
+          if (map[y][x + 1] === 1) {
+            map[y][x + 1] = 0;
+
+          }
+          cnt1++;
+          console.log(cnt1);
+        }
+      }
+    }
+    if (user === "user2") {
+      if (cnt2 < cnt_max) {
+        var x = ball.x1 / 32 - 3;
+        var y = ball.y1 / 32;
+        if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
+          if (map[y][x - 1] === 1) {
+            map[y][x - 1] = 0;
+          }
+          if (map[y][x + 1] === 1) {
+            map[y][x + 1] = 0;
+
+          }
+          cnt2++;
+          console.log(cnt2);
+        }
+      }
+    }
+  }
+
+  function removecom() {
+    if (cnt > 0 && cnt < 6) {
+      Array.splice(cnt - 1, 1);
+      console.log(Array)
+      cnt--;
+    }
+  }
+
+
+
+
+
+</script>
+
+</html>
