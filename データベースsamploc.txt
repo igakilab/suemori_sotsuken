@@ -1,0 +1,5 @@
+bomber=# create table samploc1(point1x int, point1y int);
+CREATE TABLE
+bomber=# create table samploc2(point2x int, point2y int);
+CREATE TABLE
+bomber=#
