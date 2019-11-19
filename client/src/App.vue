@@ -32,6 +32,7 @@
 </template>
 
 <script lang="ts">
+import firebase from "@/firebase/firestore.ts";
 import { Component, Vue, Prop } from "vue-property-decorator";
 import State from "./components/State.vue";
 import Board from "./components/Board.vue";
@@ -58,6 +59,10 @@ export const MOVE = {
   REDO: Symbol("REDO"),
   END: Symbol("END")
 };
+const tableDatabase = firebase
+  .firestore()
+  .collection("test1")
+  .doc("testdoc");
 
 @Component({
   components: {
@@ -106,6 +111,9 @@ export default class App extends Vue {
   public created() {
     this.disabledLeft = true;
     this.setDisabledMove();
+    // tableDatabase.get().then(data => {
+    //   console.log(data.get("field"));
+    // });
   }
 
   private getPlayerIndex() {
@@ -337,6 +345,9 @@ export default class App extends Vue {
       }
     }
     if (action === MOVE.END) {
+      tableDatabase.set({
+        field: [this.player1bomb, this.player2bomb]
+      });
       if (this.log.length % 2 === 1) {
         if (!this.judge()) {
           console.log("GAME END");
