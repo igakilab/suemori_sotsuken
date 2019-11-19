@@ -1,35 +1,35 @@
 <template>
   <div style="margin-right: 20px;">
-    <div v-for="m in select" :key="m" class="frame_stroke_rect">
+    <div v-for="(m, index) in select" :key="index" class="frame_stroke_rect">
       <font-awesome-icon
-        v-if="m === 'up'"
+        v-if="m === MOVE.UP"
         icon="arrow-alt-circle-up"
         size="4x"
       />
       <font-awesome-icon
-        v-else-if="m === 'left'"
+        v-else-if="m === MOVE.LEFT"
         icon="arrow-alt-circle-left"
         size="4x"
       />
       <font-awesome-icon
-        v-else-if="m === 'right'"
+        v-else-if="m === MOVE.RIGHT"
         icon="arrow-alt-circle-right"
         size="4x"
       />
       <font-awesome-icon
-        v-else-if="m === 'down'"
+        v-else-if="m === MOVE.DOWN"
         icon="arrow-alt-circle-down"
         size="4x"
       />
-      <font-awesome-icon v-else-if="m === 'bomb'" icon="bomb" size="4x" />
+      <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="4x" />
     </div>
     <div
       id="player1button"
       style="margin-top: 20px;"
       class="btn-square"
-      :class="hasPlayer1 ? 'player1' : 'player2'"
+      :class="turn ? (player1 ? 'player1' : 'player2') : 'player'"
     >
-      {{ hasPlayer1 ? 1 : 2 }}P
+      {{ player1 ? 1 : 2 }}P
     </div>
     <div style="margin-top: 20px;">
       <font-awesome-icon
@@ -44,15 +44,19 @@
 </template>
 
 <script lang="ts">
+import { MOVE } from "../App.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class State extends Vue {
-  @Prop({ default: 5 }) private size!: number;
-  @Prop({ default: true }) private hasPlayer1!: boolean;
+  @Prop({ default: true }) private player1!: boolean;
   @Prop({ default: 5 }) private bomb!: number;
+  @Prop({ default: true }) private turn!: boolean;
+  @Prop() select!: string[];
 
-  select: string[] = Array(this.size).fill(null);
+  get MOVE() {
+    return MOVE;
+  }
 }
 </script>
 
@@ -81,6 +85,11 @@ export default class State extends Vue {
 .player2 {
   background: #d86695;
   border-bottom: solid 4px #956286;
+}
+
+.player {
+  background: #d1c3c9;
+  border-bottom: solid 4px #979296;
 }
 
 .bomb {

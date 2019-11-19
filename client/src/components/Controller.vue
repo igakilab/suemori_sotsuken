@@ -49,6 +49,7 @@
 </template>
 
 <script lang="ts">
+import { MOVE } from "../App.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
@@ -60,32 +61,32 @@ export default class Controller extends Vue {
   @Prop() disabledRedo!: boolean;
   @Prop() disabledBomb!: boolean;
   @Prop() disabledEnd!: boolean;
-  public onUpClick() {
-    this.$emit("click", "up");
+  private onUpClick() {
+    this.$emit("click", MOVE.UP);
   }
 
-  public onLeftClick() {
-    this.$emit("click", "left");
+  private onLeftClick() {
+    this.$emit("click", MOVE.LEFT);
   }
 
-  public onRightClick() {
-    this.$emit("click", "right");
+  private onRightClick() {
+    this.$emit("click", MOVE.RIGHT);
   }
 
-  public onDownClick() {
-    this.$emit("click", "down");
+  private onDownClick() {
+    this.$emit("click", MOVE.DOWN);
   }
 
-  public onRedoClick() {
-    this.$emit("click", "redo");
+  private onRedoClick() {
+    this.$emit("click", MOVE.REDO);
   }
 
-  public onBombClick() {
-    this.$emit("click", "bomb");
+  private onBombClick() {
+    this.$emit("click", MOVE.BOMB);
   }
 
-  public onEndClick() {
-    this.$emit("click", "end");
+  private onEndClick() {
+    this.$emit("click", MOVE.END);
   }
 }
 </script>
