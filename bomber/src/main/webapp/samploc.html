@@ -13,6 +13,8 @@
   <script src="js/jquery.cookie.min.js"></script>
   <script type="text/javascript" src="dwr/interface/Loc1.js"></script>
   <script type="text/javascript" src="dwr/interface/Loc2.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-database.js"></script>
   <link rel="stylesheet" type="text/css" href="css/index.css">
   <title>BomberMan</title>
 </head>
@@ -76,6 +78,21 @@
 </body>
 
 <script type="text/javascript">
+  const firebaseConfig = {
+    apiKey: "AIzaSyDX5Eggo0Hjqq1snz-gTS8mlzbnOcCw1bc",
+    authDomain: "bomber-3f3fd.firebaseapp.com",
+    databaseURL: "https://bomber-3f3fd.firebaseio.com",
+    projectId: "bomber-3f3fd",
+    storageBucket: "bomber-3f3fd.appspot.com",
+    messagingSenderId: "834527661420",
+    appId: "1:834527661420:web:2b3b5a5059141eb6c6b749",
+    measurementId: "G-KJK9C4Z8W0"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  const database = firebase.database();
+
   var canvas = document.getElementById('canvas');
   canvas.width = 1200;		//canvasの横幅（よこはば）
   canvas.height = 500;	//canvasの縦幅（たてはば）
@@ -85,15 +102,15 @@
   var tree = new Object();
   tree.img = new Image();
   tree.img.src = 'img/tree.png';
-  tree.x1 = 96;
-  tree.y1 = 0;
+  treex1 = 96;
+  treey1 = 0;
 
   //player2
   var ball = new Object();
   ball.img = new Image();
   ball.img.src = 'img/ball.png';
-  ball.x1 = 704;
-  ball.y1 = 0;
+  ballx1 = 704;
+  bally1 = 0;
 
 
   var mapwhite = new Image();
@@ -161,8 +178,8 @@
 
 
     //画像を表示
-    ctx.drawImage(tree.img, tree.x1, tree.y1);
-    ctx.drawImage(ball.img, ball.x1, ball.y1);
+    ctx.drawImage(tree.img, treex1, treey1);
+    ctx.drawImage(ball.img, ballx1, bally1);
     requestAnimationFrame(main);
 
   }
@@ -188,8 +205,8 @@
           console.log(list[i]);
           const list1 = data.map(obj => obj.point2y);
           console.log(list1[i]);
-          ball.x1 = list[i];
-          ball.y1 = list1[i]
+          ballx1 = list[i];
+          bally1 = list1[i]
         },
       });
       i++;
@@ -202,8 +219,8 @@
           console.log(list[j]);
           const list1 = data.map(obj => obj.point1y);
           console.log(list1[j]);
-          tree.x1 = list[j];
-          tree.y1 = list1[j];
+          treex1 = list[j];
+          treey1 = list1[j];
 
         },
       });
@@ -216,11 +233,12 @@
     $('#pprinterReply').text("");
   }
 
+
   function insertLoc() {
     var user = $.cookie('name');
     if (cnt1 === cnt_max) {
       if (user == "user1") {
-        var loc1Array = [{ point1x: tree.x1, point1y: tree.y1 }]
+        var loc1Array = [{ point1x: treex1, point1y: treey1 }]
         Loc1.insertLoc1(loc1Array, {
           callback: function () {
             console.log("insert_loc1実行完了")
@@ -233,7 +251,7 @@
     }
     if (cnt2 === cnt_max) {
       if (user == "user2") {
-        var loc2Array = [{ point2x: ball.x1, point2y: ball.y1 }]
+        var loc2Array = [{ point2x: ballx1, point2y: bally1 }]
         Loc2.insertLoc2(loc2Array, {
           callback: function () {
             console.log("insert_loc2実行完了")
@@ -246,19 +264,26 @@
     }
   }
 
+  let room1 = "treex";
+  let room2 = "treey";
+  let room3 = "ballx";
+  let room4 = "bally";
 
-
-
+  var user = $.cookie('name');
   function insertup() {
-    var user = $.cookie('name');
+
     if (user === "user1") {
       if (cnt1 < cnt_max) {
-        var x = tree.x1 / 32 - 3;
-        var y = tree.y1 / 32;
+        var x = treex1 / 32 - 3;
+        var y = treey1 / 32;
         if (y > min1 && y <= max1) {
           y--;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            tree.y1 -= 32;
+            treey1 -= 32;
+            database.ref(room2).set({
+              treey1
+            });
+
             cnt1++;
             console.log(cnt1);
           }
@@ -267,12 +292,16 @@
     }
     if (user === "user2") {
       if (cnt2 < cnt_max) {
-        var x = ball.x1 / 32 - 3;
-        var y = ball.y1 / 32;
+        var x = ballx1 / 32 - 3;
+        var y = bally1 / 32;
         if (y > min1 && y <= max1) {
           y--;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            ball.y1 -= 32;
+            bally1 -= 32;
+            database.ref(room4).set({
+              bally1
+            });
+
             cnt2++;
             console.log(cnt2);
           }
@@ -281,15 +310,19 @@
     }
   }
   function insertright() {
-    var user = $.cookie('name');
+
     if (user === "user1") {
       if (cnt1 < cnt_max) {
-        var x = tree.x1 / 32 - 3;
-        var y = tree.y1 / 32;
+        var x = treex1 / 32 - 3;
+        var y = treey1 / 32;
         if (x >= min1 && x < max1) {
           x++;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            tree.x1 += 32;
+            treex1 += 32;
+            database.ref(room1).set({
+              treex1
+            });
+
             cnt1++;
             console.log(cnt1);
           }
@@ -298,12 +331,16 @@
     }
     if (user === "user2") {
       if (cnt2 < cnt_max) {
-        var x = ball.x1 / 32 - 3;
-        var y = ball.y1 / 32;
+        var x = ballx1 / 32 - 3;
+        var y = bally1 / 32;
         if (x >= min1 && x < max1) {
           x++;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            ball.x1 += 32;
+            ballx1 += 32;
+            database.ref(room3).set({
+              ballx1
+            });
+
             cnt2++;
             console.log(cnt2);
           }
@@ -312,15 +349,19 @@
     }
   }
   function insertleft() {
-    var user = $.cookie('name');
+
     if (user === "user1") {
       if (cnt1 < cnt_max) {
-        var x = tree.x1 / 32 - 3;
-        var y = tree.y1 / 32;
+        var x = treex1 / 32 - 3;
+        var y = treey1 / 32;
         if (x > min1 && x <= max1) {
           x--;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            tree.x1 -= 32;
+            treex1 -= 32;
+            database.ref(room1).set({
+              treex1
+            });
+
             cnt1++;
             console.log(cnt1);
           }
@@ -329,12 +370,16 @@
     }
     if (user === "user2") {
       if (cnt2 < cnt_max) {
-        var x = ball.x1 / 32 - 3;
-        var y = ball.y1 / 32;
+        var x = ballx1 / 32 - 3;
+        var y = bally1 / 32;
         if (x > min1 && x <= max1) {
           x--;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            ball.x1 -= 32;
+            ballx1 -= 32;
+            database.ref(room3).set({
+              ballx1
+            });
+
             cnt2++;
             console.log(cnt2);
           }
@@ -344,15 +389,19 @@
   }
 
   function insertdown() {
-    var user = $.cookie('name');
+
     if (user === "user1") {
       if (cnt1 < cnt_max) {
-        var x = tree.x1 / 32 - 3;
-        var y = tree.y1 / 32;
+        var x = treex1 / 32 - 3;
+        var y = treey1 / 32;
         if (y >= min1 && y < max1) {
           y++;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            tree.y1 += 32;
+            treey1 += 32;
+            database.ref(room2).set({
+              treey1
+            });
+
             cnt1++;
             console.log(cnt1);
           }
@@ -361,12 +410,16 @@
     }
     if (user === "user2") {
       if (cnt2 < cnt_max) {
-        var x = ball.x1 / 32 - 3;
-        var y = ball.y1 / 32;
+        var x = ballx1 / 32 - 3;
+        var y = bally1 / 32;
         if (y >= min1 && y < max1) {
           y++;
           if (map[y][x] === 0 || map[y][x] === 2) {
-            ball.y1 += 32;
+            bally1 += 32;
+            database.ref(room4).set({
+              bally1
+            });
+
             cnt2++;
             console.log(cnt2);
           }
@@ -374,12 +427,13 @@
       }
     }
   }
+
   function insertbomb() {
     var user = $.cookie('name');
     if (user === "user1") {
       if (cnt1 < cnt_max) {
-        var x = tree.x1 / 32 - 3;
-        var y = tree.y1 / 32;
+        var x = treex1 / 32 - 3;
+        var y = treey1 / 32;
         if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
           if (map[y][x - 1] === 1) {
             map[y][x - 1] = 0;
@@ -395,8 +449,8 @@
     }
     if (user === "user2") {
       if (cnt2 < cnt_max) {
-        var x = ball.x1 / 32 - 3;
-        var y = ball.y1 / 32;
+        var x = ballx1 / 32 - 3;
+        var y = bally1 / 32;
         if (y >= min1 && y <= max1 && x >= min1 && x <= max1) {
           if (map[y][x - 1] === 1) {
             map[y][x - 1] = 0;
@@ -421,6 +475,23 @@
   }
 
 
+  database.ref(room2).on("value", function (data) {
+    const v3 = data.val();
+    treey1 = v3.treey1;
+  })
+  database.ref(room4).on("value", function (data) {
+    const v1 = data.val();
+    bally1 = v1.bally1;
+  });
+
+  database.ref(room1).on("value", function (data) {
+    const v2 = data.val();
+    treex1 = v2.treex1;
+  });
+  database.ref(room3).on("value", function (data) {
+    const v = data.val();
+    ballx1 = v.ballx1;
+  });
 
 
 
