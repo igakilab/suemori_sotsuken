@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!------この文書型宣言は忘れずに書く------>
+<html>
+
+<head>
+  <title>ログイン</title>
+  <meta http-equiv="content-language" content="ja">
+  <meta charset="UTF-8">
+  <script type="text/javascript" src="dwr/engine.js"></script>
+  <script type="text/javascript" src="dwr/util.js"></script>
+  <script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="js/jquery.serialize.js"></script>
+  <script src="js/jquery.cookie.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-database.js"></script>
+</head>
+
+<body>
+  <form name="login">
+    IDとパスワードを入力してください<br>
+    <p>　　　　ID <input type="text" name="name" value=""><br></p>
+    <p>パスワード <input type="text" name="password" value="">
+      <input type="button" value="ログイン" onclick="Log()"><br></p>
+  </form>
+
+  <form name="newaccount">
+    初めての方はログインアカウントを作るためにこちらをクリックしてください<br>
+    <input type="button" value="新規" onclick="location.href = 'usercreate.html'"><br>
+  </form>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDX5Eggo0Hjqq1snz-gTS8mlzbnOcCw1bc",
+      authDomain: "bomber-3f3fd.firebaseapp.com",
+      databaseURL: "https://bomber-3f3fd.firebaseio.com",
+      projectId: "bomber-3f3fd",
+      storageBucket: "bomber-3f3fd.appspot.com",
+      messagingSenderId: "834527661420",
+      appId: "1:834527661420:web:2b3b5a5059141eb6c6b749",
+      measurementId: "G-KJK9C4Z8W0"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    const database = firebase.database();
+    let room1 = "/login/user";
+    
+    function Log() {
+      const str1 = document.login.name.value;
+      const str2 = document.login.password.value;
+      database.ref(room1).on("child_added", function (data) {
+        const v = data.val();
+        if (v.str1 === str1 && v.str2 === str2) {
+          OK();
+          
+        }
+        
+      });
+    }
+
+
+
+    function OK() {
+      var name = document.login.name.value;
+      var pass = document.login.password.value;
+      document.cookie = 'name=' + name;
+      document.cookie = 'pass=' + pass;
+      location.href = "room.html";
+
+    }
+
+  </script>
+</body>
+
+</html>
