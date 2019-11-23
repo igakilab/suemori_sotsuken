@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import BooststrapVue from "bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
+import router from "./router";
 
 library.add(fas, far, fab);
 
@@ -17,5 +18,10 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;
 
 new Vue({
+  el: "#app",
+  router,
+  components: {
+    App
+  },
   render: h => h(App)
 }).$mount("#app");

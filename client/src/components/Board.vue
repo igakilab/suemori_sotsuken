@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { BOARD } from "../App.vue";
+import { BOARD } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component

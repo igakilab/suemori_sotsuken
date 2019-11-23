@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts">
-import { MOVE } from "../App.vue";
+import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component

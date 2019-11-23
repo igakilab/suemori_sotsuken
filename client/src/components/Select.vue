@@ -44,11 +44,11 @@
 </template>
 
 <script lang="ts">
-import { MOVE } from "../App.vue";
+import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
-export default class State extends Vue {
+export default class Select extends Vue {
   @Prop({ default: true }) private player1!: boolean;
   @Prop({ default: 5 }) private bomb!: number;
   @Prop({ default: true }) private turn!: boolean;
