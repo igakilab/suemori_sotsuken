@@ -14,6 +14,12 @@
       @keydown.enter="signUp"
     />
     <b-button @click="signUp">Register</b-button>
+    <vue-loading
+      v-if="loading"
+      type="spin"
+      color="#333"
+      :size="{ width: '50px', height: '50px' }"
+    ></vue-loading>
     <p>
       Do you have an account?
       <router-link to="/signin">sign in now!!</router-link>
