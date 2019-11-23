@@ -32,4 +32,4 @@ const map: number[][][] = [
 ];
 
 // ここで表示変更
-export default map[1];
+export default map[0];

@@ -13,7 +13,10 @@ const router: Router = new Router({
     {
       path: "/",
       name: "game",
-      component: Game
+      component: Game,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: "/signin",
@@ -35,7 +38,7 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth) {
     // このルートはログインされているかどうか認証が必要です。
     // もしされていないならば、ログインページにリダイレクトします。
-    firebase.auth().onAuthStateChanged(function(user) {
+    firebase.auth().onAuthStateChanged(user => {
       if (user) {
         next();
       } else {
