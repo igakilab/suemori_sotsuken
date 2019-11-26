@@ -14,12 +14,11 @@
       @keydown.enter="signIn"
     />
     <b-button @click="signIn">Signin</b-button>
-    <vue-loading
+    <b-spinner
+      label="Spinning"
       v-if="loading"
-      type="spin"
-      color="#333"
-      :size="{ width: '50px', height: '50px' }"
-    ></vue-loading>
+      style="margin-top: 10px;"
+    ></b-spinner>
     <p>
       You don't have an account?
       <router-link to="/signup">create account now!!</router-link>

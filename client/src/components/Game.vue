@@ -83,27 +83,86 @@ export default class Game extends Vue {
   private player1bomb: number = 5;
   private player2bomb: number = 5;
   private log: { player: number; command: Symbol[] }[] = [];
+  private uid: string = "";
+  private room: firebase.database.Reference | null = null;
+  private isPlayer1: boolean = true;
 
-  public created() {
-    this.disabledLeft = true;
+  public async created() {
+    // Vuex置換対象
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      this.$router.push("/signin");
+      return;
+    }
+    this.uid = user.uid;
+
+    const roomID: number = (
+      await firebase
+        .database()
+        .ref(this.uid)
+        .child("roomID")
+        .once("value")
+    ).val();
+
+    this.room = firebase
+      .database()
+      .ref("room")
+      .child(String(roomID));
+
+    const end: boolean = (await this.room.child("end").once("value")).val();
+
+    if (end) {
+      console.log("既にゲームが終了しています。ルーム選択画面に戻ります。");
+      this.$router.push("/room");
+    }
+
+    const player1uid: string = (
+      await this.room
+        .child("player1")
+        .child("uid")
+        .once("value")
+    ).val();
+
+    if (this.uid === player1uid) {
+      this.isPlayer1 = true;
+    } else {
+      const player2uid: string = (
+        await this.room
+          .child("player2")
+          .child("uid")
+          .once("value")
+      ).val();
+
+      if (this.uid === player2uid) {
+        this.isPlayer1 = false;
+      } else {
+        // 例外
+        firebase
+          .database()
+          .ref("user")
+          .child(this.uid)
+          .child("roomID")
+          .set(0);
+        console.log("エラーが発生しました。ルーム選択画面に戻ります。");
+        this.$router.push("/room");
+      }
+    }
+
+    const playing: boolean = (
+      await this.room.child("playing").once("value")
+    ).val();
+
+    if (playing) {
+      // 既にプレイが始まっている場合
+    } else {
+      // 初期設定
+    }
+
     this.setDisabledMove();
     this.board[0][0] = BOARD.PLAYER1;
     this.board[this.board.length - 1][
       this.board[this.board.length - 1].length - 1
     ] = BOARD.PLAYER2;
-    firebase
-      .database()
-      .ref("ballx")
-      .child("ballx1")
-      .set(Math.random() * 100000);
-    firebase
-      .database()
-      .ref("ballx")
-      .child("ballx1")
-      .on("value", (snapshot: any) => {
-        const msg = snapshot.val();
-        console.log(msg);
-      });
   }
 
   private getPlayerIndex() {
