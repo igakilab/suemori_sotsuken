@@ -51,7 +51,7 @@ export default class SignIn extends Vue {
       .signInWithEmailAndPassword(this.username, this.password)
       .then((user: any) => {
         alert("ログインしました。");
-        this.$router.push("/");
+        this.$router.push("/room");
       })
       .catch(error => {
         alert(error.message);

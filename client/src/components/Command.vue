@@ -1,6 +1,6 @@
 <template>
   <div style="margin-right: 20px;">
-    <div v-for="(m, index) in select" :key="index" class="frame_stroke_rect">
+    <div v-for="(m, index) in command" :key="index" class="frame_stroke_rect">
       <font-awesome-icon
         v-if="m === MOVE.UP"
         icon="arrow-alt-circle-up"
@@ -48,11 +48,11 @@ import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
-export default class Select extends Vue {
+export default class Command extends Vue {
   @Prop({ default: true }) private player1!: boolean;
   @Prop({ default: 5 }) private bomb!: number;
   @Prop({ default: true }) private turn!: boolean;
-  @Prop() select!: string[];
+  @Prop() command!: string[];
 
   get MOVE() {
     return MOVE;

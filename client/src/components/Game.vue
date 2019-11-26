@@ -1,18 +1,18 @@
 <template>
   <div id="game">
-    <Select
+    <Command
       :player1="true"
       :turn="player1Turn"
-      :select="player1select"
+      :command="player1command"
       :bomb="player1bomb"
       style="float: left;"
     />
     <Board :board="board" ref="ref_board" />
     <div style="float: left;">
-      <Select
+      <Command
         :player1="false"
         :turn="!player1Turn"
-        :select="player2select"
+        :command="player2command"
         :bomb="player2bomb"
         style="float: left;"
       />
@@ -35,11 +35,11 @@
 import board from "@/game/board.ts";
 import firebase from "@/firebase/rdb.ts";
 import { Component, Vue, Prop } from "vue-property-decorator";
-import Select from "@/components/Select.vue";
+import Command from "@/components/Command.vue";
 import Board from "@/components/Board.vue";
 import Controller from "@/components/Controller.vue";
 
-const SELECT_SIZE: number = 5;
+const COMMAND_SIZE: number = 5;
 export const BOARD = {
   NONE: 0,
   PLAYER1: 100,
@@ -63,7 +63,7 @@ export const MOVE = {
 
 @Component({
   components: {
-    Select,
+    Command,
     Board,
     Controller
   }
@@ -78,11 +78,11 @@ export default class Game extends Vue {
   private disabledBomb: boolean = false;
   private disabledRedo: boolean = false;
   private disabledEnd: boolean = false;
-  private player1select: Symbol[] = new Array(SELECT_SIZE).fill(null);
-  private player2select: Symbol[] = new Array(SELECT_SIZE).fill(null);
+  private player1command: Symbol[] = new Array(COMMAND_SIZE).fill(null);
+  private player2command: Symbol[] = new Array(COMMAND_SIZE).fill(null);
   private player1bomb: number = 5;
   private player2bomb: number = 5;
-  private log: { player: number; select: Symbol[] }[] = [];
+  private log: { player: number; command: Symbol[] }[] = [];
 
   public created() {
     this.disabledLeft = true;
@@ -145,13 +145,13 @@ export default class Game extends Vue {
       (this.player1Turn ? this.player1bomb : this.player2bomb) <= 0 ||
       [BOARD.BOMB_ON_PLAYER1, BOARD.BOMB_ON_PLAYER2].includes(this.board[y][x]);
     this.disabledRedo =
-      (this.player1Turn ? this.player1select : this.player2select).filter(
+      (this.player1Turn ? this.player1command : this.player2command).filter(
         v => v
       ).length === 0;
     this.disabledEnd =
-      (this.player1Turn ? this.player1select : this.player2select).filter(
+      (this.player1Turn ? this.player1command : this.player2command).filter(
         v => v
-      ).length < SELECT_SIZE;
+      ).length < COMMAND_SIZE;
     if (!this.disabledEnd) {
       this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown = this.disabledBomb = true;
     }
@@ -164,10 +164,10 @@ export default class Game extends Vue {
       [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
     ) {
       if (this.player1Turn) {
-        if (this.player1select.filter(v => v).length < SELECT_SIZE) {
+        if (this.player1command.filter(v => v).length < COMMAND_SIZE) {
           this.$set(
-            this.player1select,
-            this.player1select.filter(v => v).length,
+            this.player1command,
+            this.player1command.filter(v => v).length,
             action
           );
           if (action === MOVE.BOMB) {
@@ -198,10 +198,10 @@ export default class Game extends Vue {
           }
         }
       } else {
-        if (this.player2select.filter(v => v).length < SELECT_SIZE) {
+        if (this.player2command.filter(v => v).length < COMMAND_SIZE) {
           this.$set(
-            this.player2select,
-            this.player2select.filter(v => v).length,
+            this.player2command,
+            this.player2command.filter(v => v).length,
             action
           );
           if (action === MOVE.BOMB) {
@@ -235,13 +235,13 @@ export default class Game extends Vue {
     }
     if (action === MOVE.REDO) {
       if (this.player1Turn) {
-        if (this.player1select.filter(v => v).length > 0) {
-          const preMove = this.player1select[
-            this.player1select.filter(v => v).length - 1
+        if (this.player1command.filter(v => v).length > 0) {
+          const preMove = this.player1command[
+            this.player1command.filter(v => v).length - 1
           ];
           this.$set(
-            this.player1select,
-            this.player1select.filter(v => v).length - 1,
+            this.player1command,
+            this.player1command.filter(v => v).length - 1,
             null
           );
           if (preMove === MOVE.BOMB) {
@@ -284,13 +284,13 @@ export default class Game extends Vue {
           }
         }
       } else {
-        if (this.player2select.filter(v => v).length > 0) {
-          const preMove = this.player2select[
-            this.player2select.filter(v => v).length - 1
+        if (this.player2command.filter(v => v).length > 0) {
+          const preMove = this.player2command[
+            this.player2command.filter(v => v).length - 1
           ];
           this.$set(
-            this.player2select,
-            this.player2select.filter(v => v).length - 1,
+            this.player2command,
+            this.player2command.filter(v => v).length - 1,
             null
           );
           if (preMove === MOVE.BOMB) {
@@ -345,11 +345,11 @@ export default class Game extends Vue {
         }
       }
       if (this.player1Turn) {
-        this.log.push({ player: 1, select: this.player1select });
-        this.player2select = new Array(5).fill(null);
+        this.log.push({ player: 1, command: this.player1command });
+        this.player2command = new Array(5).fill(null);
       } else {
-        this.log.push({ player: 2, select: this.player2select });
-        this.player1select = new Array(5).fill(null);
+        this.log.push({ player: 2, command: this.player2command });
+        this.player1command = new Array(5).fill(null);
       }
       this.player1Turn = !this.player1Turn;
     }

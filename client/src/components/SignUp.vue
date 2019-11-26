@@ -50,7 +50,7 @@ export default class SignUp extends Vue {
       .createUserWithEmailAndPassword(this.username, this.password)
       .then((user: any) => {
         alert("アカウントが作成されました。");
-        this.$router.push("/");
+        this.$router.push("/room");
       })
       .catch(error => {
         alert(error.message);
