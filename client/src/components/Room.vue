@@ -106,7 +106,7 @@ export default class Room extends Vue {
           .once("value")
       ).val()
     );
-    const rooms: {
+    const room: {
       id: number;
       mode: number;
       board: number[][];
@@ -142,7 +142,7 @@ export default class Room extends Vue {
       turn: true
     };
 
-    roomRef.child(String(Number(roomCount) + 1)).set(rooms);
+    roomRef.child(String(Number(roomCount) + 1)).set(room);
 
     firebase
       .database()
@@ -175,6 +175,7 @@ export default class Room extends Vue {
     const roomRef = firebase.database().ref("room");
 
     const userSnapshot = await userRef.once("value");
+
     if (!userSnapshot.exists()) {
       userRef.child("win").set(0);
       userRef.child("lose").set(0);
@@ -192,13 +193,6 @@ export default class Room extends Vue {
               .child("end")
               .once("value")
           ).val()
-        );
-
-        console.log(
-          await roomRef
-            .child(String(roomID))
-            .child("end")
-            .once("value")
         );
 
         if (!end) {
@@ -219,23 +213,25 @@ export default class Room extends Vue {
 
     roomRef.on("value", snapshot => {
       const rooms: {
-        id: number;
-        mode: number;
-        board: number[][];
-        end: boolean;
-        player1: {
-          uid: string;
-          logs: { player: number; command: string[] }[];
-          bomb: number;
+        number: {
+          id: number;
+          mode: number;
+          board: number[][];
+          end: boolean;
+          player1: {
+            uid: string;
+            logs: { player: number; command: string[] }[];
+            bomb: number;
+          };
+          player2: {
+            uid: string | null;
+            logs: { player: number; command: string[] }[];
+            bomb: number;
+          };
+          turn: boolean;
         };
-        player2: {
-          uid: string | null;
-          logs: { player: number; command: string[] }[];
-          bomb: number;
-        };
-        turn: boolean;
-      }[] = snapshot.val();
-      this.rooms = rooms
+      } = snapshot.val();
+      this.rooms = Object.values(rooms)
         .filter(room => !room.end)
         .map(room => {
           return {

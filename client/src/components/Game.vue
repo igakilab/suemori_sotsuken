@@ -99,7 +99,8 @@ export default class Game extends Vue {
     const roomID: number = (
       await firebase
         .database()
-        .ref(this.uid)
+        .ref("user")
+        .child(this.uid)
         .child("roomID")
         .once("value")
     ).val();
@@ -112,7 +113,7 @@ export default class Game extends Vue {
     const end: boolean = (await this.room.child("end").once("value")).val();
 
     if (end) {
-      console.log("既にゲームが終了しています。ルーム選択画面に戻ります。");
+      alert("既にゲームが終了しています。ルーム選択画面に戻ります。");
       this.$router.push("/room");
     }
 
@@ -143,7 +144,7 @@ export default class Game extends Vue {
           .child(this.uid)
           .child("roomID")
           .set(0);
-        console.log("エラーが発生しました。ルーム選択画面に戻ります。");
+        alert("エラーが発生しました。ルーム選択画面に戻ります。");
         this.$router.push("/room");
       }
     }
@@ -154,15 +155,19 @@ export default class Game extends Vue {
 
     if (playing) {
       // 既にプレイが始まっている場合
+      // 盤面取得
+      this.board = (await this.room.child("board").once("value")).val();
     } else {
       // 初期設定
+      this.$set(this.board[0], 0, BOARD.PLAYER1);
+      this.$set(
+        this.board[this.board.length - 1],
+        this.board[this.board.length - 1].length - 1,
+        BOARD.PLAYER2
+      );
     }
 
     this.setDisabledMove();
-    this.board[0][0] = BOARD.PLAYER1;
-    this.board[this.board.length - 1][
-      this.board[this.board.length - 1].length - 1
-    ] = BOARD.PLAYER2;
   }
 
   private getPlayerIndex() {
@@ -218,7 +223,14 @@ export default class Game extends Vue {
 
   private move(action: symbol) {
     const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex();
-
+    console.log(
+      this.player1command,
+      x,
+      y,
+      action,
+      MOVE.RIGHT,
+      this.player1Turn
+    );
     if (
       [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
     ) {
@@ -229,6 +241,7 @@ export default class Game extends Vue {
             this.player1command.filter(v => v).length,
             action
           );
+
           if (action === MOVE.BOMB) {
             this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER1);
             this.player1bomb--;
@@ -398,8 +411,8 @@ export default class Game extends Vue {
       //   field: [this.player1bomb, this.player2bomb]
       // });
       if (this.log.length % 2 === 1) {
-        if (!this.judge()) {
-          console.log("GAME END");
+        if (this.judge()) {
+          alert("GAME END");
           // return;
         }
       }
