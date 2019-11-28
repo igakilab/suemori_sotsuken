@@ -3,7 +3,7 @@
     <div>
       <b-button v-b-modal.createRoomModal style="margin-bottom: 10px;"
         >ルーム作成</b-button
-      >
+      ><span style="margin-left: 10px;">ユーザーID：{{ uid }}</span>
       <b-modal id="createRoomModal" title="ルーム作成" @ok="genRoom">
         <b-form-group label="ゲームモード" style="cursor: pointer;">
           <b-form-radio-group
@@ -23,12 +23,7 @@
     <div>
       <b-table striped hover :items="rooms" :fields="fields">
         <template v-slot:cell(actions)="row">
-          <b-button
-            size="sm"
-            @click="enterRoom(row.item.id)"
-            class="mr-2"
-            :disabled="row.item.player1 === uid"
-          >
+          <b-button size="sm" @click="enterRoom(row.item.id)" class="mr-2">
             入室
           </b-button>
           <b-button size="sm" class="mr-2" :disabled="true">
@@ -52,6 +47,7 @@
 import firebase from "@/firebase/rdb.ts";
 import { Component, Vue, Prop } from "vue-property-decorator";
 import board from "@/game/board.ts";
+import UserModule from "@/store/user.ts";
 
 @Component
 export default class Room extends Vue {
@@ -62,9 +58,12 @@ export default class Room extends Vue {
     { key: "actions", label: "" }
   ];
   private rooms: {}[] = [];
-  private uid: string = "";
   private mode: number = 1;
   private bomb: number = 5;
+
+  get uid() {
+    return UserModule.uid;
+  }
 
   private infoModal = {
     id: "info-modal",
@@ -79,12 +78,12 @@ export default class Room extends Vue {
       .child(String(id))
       .child("player2")
       .child("uid")
-      .set(this.uid);
+      .set(UserModule.uid);
 
     firebase
       .database()
       .ref("user")
-      .child(this.uid)
+      .child(UserModule.uid)
       .child("roomID")
       .set(id);
 
@@ -104,7 +103,7 @@ export default class Room extends Vue {
           .database()
           .ref("roomCount")
           .once("value")
-      ).val()
+      ).val() | 0
     );
     const room: {
       id: number;
@@ -130,7 +129,7 @@ export default class Room extends Vue {
       playing: false,
       end: false,
       player1: {
-        uid: this.uid,
+        uid: UserModule.uid,
         logs: [],
         bomb: this.bomb
       },
@@ -147,7 +146,7 @@ export default class Room extends Vue {
     firebase
       .database()
       .ref("user")
-      .child(this.uid)
+      .child(UserModule.uid)
       .child("roomID")
       .set(Number(roomCount) + 1);
 
@@ -165,15 +164,13 @@ export default class Room extends Vue {
       this.$router.push("/signin");
       return;
     }
-    this.uid = user.uid;
+    UserModule.setUID(user.uid);
 
     const userRef = firebase
       .database()
       .ref("user")
-      .child(this.uid);
-
+      .child(UserModule.uid);
     const roomRef = firebase.database().ref("room");
-
     const userSnapshot = await userRef.once("value");
 
     if (!userSnapshot.exists()) {
@@ -185,20 +182,13 @@ export default class Room extends Vue {
       const roomID: number = userSnapshot.child("roomID").val();
 
       if (roomID > 0) {
-        // 移動
-        const end: boolean = Boolean(
-          (
-            await roomRef
-              .child(String(roomID))
-              .child("end")
-              .once("value")
-          ).val()
-        );
-
-        if (!end) {
-          this.$router.push("/");
-          return;
-        }
+        roomRef
+          .child(String(roomID))
+          .child("end")
+          .set(true);
+        userRef
+          .child("lose")
+          .set((await userRef.child("lose").once("value")).val() + 1);
       }
     }
 
@@ -217,6 +207,7 @@ export default class Room extends Vue {
           id: number;
           mode: number;
           board: number[][];
+          playing: boolean;
           end: boolean;
           player1: {
             uid: string;
@@ -230,16 +221,22 @@ export default class Room extends Vue {
           };
           turn: boolean;
         };
-      } = snapshot.val();
-      this.rooms = Object.values(rooms)
-        .filter(room => !room.end)
-        .map(room => {
-          return {
-            id: room.id,
-            mode: room.mode,
-            player1: room.player1.uid
-          };
-        });
+      } | null = snapshot.val();
+
+      if (rooms) {
+        this.rooms = Object.values(rooms)
+          .filter(
+            room =>
+              !room.playing && !room.end && room.player1.uid !== UserModule.uid
+          )
+          .map(room => {
+            return {
+              id: room.id,
+              mode: room.mode,
+              player1: room.player1.uid
+            };
+          });
+      }
     });
   }
 }

@@ -32,7 +32,10 @@ const router: Router = new Router({
     {
       path: "/room",
       name: "room",
-      component: Room
+      component: Room,
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 });
@@ -45,7 +48,6 @@ router.beforeEach((to, from, next) => {
     // このルートはログインされているかどうか認証が必要です。
     // もしされていないならば、ログインページにリダイレクトします。
     firebase.auth().onAuthStateChanged(user => {
-      console.log(user);
       if (user) {
         next();
       } else {

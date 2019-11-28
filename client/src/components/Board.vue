@@ -82,6 +82,7 @@
 <script lang="ts">
 import { BOARD } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
+import { faResolving } from "@fortawesome/free-brands-svg-icons";
 
 @Component
 export default class Board extends Vue {
@@ -94,7 +95,7 @@ export default class Board extends Vue {
     return BOARD;
   }
 
-  public explosion() {
+  public async explosion() {
     this.board.forEach((row, i) => {
       row.forEach((cell, j) => {
         if (
@@ -157,6 +158,12 @@ export default class Board extends Vue {
           this.$set(this.board[i], j, BOARD.EXPLOSION);
         }
       });
+    });
+
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, 1000);
     });
   }
 }

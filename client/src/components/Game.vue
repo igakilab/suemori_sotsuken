@@ -1,8 +1,22 @@
 <template>
   <div id="game">
+    <b-alert show variant="primary" v-if="!playing"
+      >プレイヤーを待機しています…<b-spinner
+        style="margin-left: 10px;"
+        variant="primary"
+        label="Spinning"
+      ></b-spinner
+    ></b-alert>
+    <b-alert v-else show variant="success"
+      >ゲームスタート！ 次の動作まで残り{{ 5 - (second % 6) }}秒<b-spinner
+        variant="success"
+        label="Spinning"
+        style="margin-left: 15px;"
+      ></b-spinner
+    ></b-alert>
     <Command
       :player1="true"
-      :turn="player1Turn"
+      :turn="isPlayer1"
       :command="player1command"
       :bomb="player1bomb"
       style="float: left;"
@@ -11,13 +25,13 @@
     <div style="float: left;">
       <Command
         :player1="false"
-        :turn="!player1Turn"
+        :turn="!isPlayer1"
         :command="player2command"
         :bomb="player2bomb"
         style="float: left;"
       />
       <Controller
-        @click="move"
+        @click="setCommand"
         :disabledUp="disabledUp"
         :disabledLeft="disabledLeft"
         :disabledRight="disabledRight"
@@ -38,8 +52,10 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import Command from "@/components/Command.vue";
 import Board from "@/components/Board.vue";
 import Controller from "@/components/Controller.vue";
+import UserModule from "@/store/user.ts";
 
 const COMMAND_SIZE: number = 5;
+const sleep = (ms: number) => new Promise(f => setTimeout(f, ms));
 export const BOARD = {
   NONE: 0,
   PLAYER1: 100,
@@ -58,7 +74,8 @@ export const MOVE = {
   DOWN: Symbol("DOWN"),
   BOMB: Symbol("BOMB"),
   REDO: Symbol("REDO"),
-  END: Symbol("END")
+  END: Symbol("END"),
+  NULL: Symbol("NULL")
 };
 
 @Component({
@@ -69,38 +86,87 @@ export const MOVE = {
   }
 })
 export default class Game extends Vue {
-  private player1Turn: boolean = true;
   private board: number[][] = board;
-  private disabledUp: boolean = false;
-  private disabledLeft: boolean = false;
-  private disabledRight: boolean = false;
-  private disabledDown: boolean = false;
-  private disabledBomb: boolean = false;
-  private disabledRedo: boolean = false;
-  private disabledEnd: boolean = false;
-  private player1command: Symbol[] = new Array(COMMAND_SIZE).fill(null);
-  private player2command: Symbol[] = new Array(COMMAND_SIZE).fill(null);
+  private disabledUp: boolean = true;
+  private disabledLeft: boolean = true;
+  private disabledRight: boolean = true;
+  private disabledDown: boolean = true;
+  private disabledBomb: boolean = true;
+  private disabledRedo: boolean = true;
+  private disabledEnd: boolean = true;
+  private player1command: symbol[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private player2command: symbol[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private player1bomb: number = 5;
   private player2bomb: number = 5;
-  private log: { player: number; command: Symbol[] }[] = [];
-  private uid: string = "";
+  private log: symbol[][] = [];
   private room: firebase.database.Reference | null = null;
   private isPlayer1: boolean = true;
+  private playing: boolean = false;
+  private second: number = 0;
 
-  public async created() {
-    // Vuex置換対象
-    const user = firebase.auth().currentUser;
-    if (!user) {
-      this.$router.push("/signin");
+  private async *makeRangeIterator(start = 0, end = Infinity, step = 1) {
+    let n = 0;
+    for (let i = start; i < end; i += step) {
+      n += 1;
+      await sleep(1000);
+      yield i;
+    }
+  }
+
+  private async start() {
+    if (!this.room) {
+      alert("ルーム情報を失いました。ルーム選択画面に戻ります。");
+      this.$router.push("/room");
       return;
     }
-    this.uid = user.uid;
+
+    this.setDisabledMove();
+
+    const player = `player${this.isPlayer1 ? 1 : 2}`;
+
+    this.room
+      .child(player)
+      .child("bomb")
+      .on("value", data => {
+        if (this.isPlayer1) {
+          this.player1bomb = data.val();
+        } else {
+          this.player2bomb = data.val();
+        }
+      });
+
+    this.room
+      .child(player)
+      .child("command")
+      .on("value", data => {
+        // 次回ここから
+        // if (this.isPlayer1) {
+        //   this.player1command = data.val();
+        // } else {
+        //   this.player2command = data.val();
+        // }
+      });
+
+    // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
+    for await (const value of this.makeRangeIterator()) {
+      this.second = value;
+      if (this.second % 5 === 0) {
+        // なんか処理
+      }
+    }
+  }
+
+  public async created() {
+    if (UserModule.uid === "") {
+      alert("ユーザー情報を失いました。ルーム選択画面に戻ります。");
+      this.$router.push("/room");
+    }
 
     const roomID: number = (
       await firebase
         .database()
         .ref("user")
-        .child(this.uid)
+        .child(UserModule.uid)
         .child("roomID")
         .once("value")
     ).val();
@@ -110,10 +176,24 @@ export default class Game extends Vue {
       .ref("room")
       .child(String(roomID));
 
+    const playing: boolean = (
+      await this.room.child("playing").once("value")
+    ).val();
     const end: boolean = (await this.room.child("end").once("value")).val();
 
     if (end) {
       alert("既にゲームが終了しています。ルーム選択画面に戻ります。");
+      this.$router.push("/room");
+    }
+
+    if (playing) {
+      firebase
+        .database()
+        .ref("user")
+        .child(UserModule.uid)
+        .child("roomID")
+        .set(0);
+      alert("既にゲームが行われています。ルーム選択画面に戻ります。");
       this.$router.push("/room");
     }
 
@@ -124,7 +204,7 @@ export default class Game extends Vue {
         .once("value")
     ).val();
 
-    if (this.uid === player1uid) {
+    if (UserModule.uid === player1uid) {
       this.isPlayer1 = true;
     } else {
       const player2uid: string = (
@@ -134,14 +214,15 @@ export default class Game extends Vue {
           .once("value")
       ).val();
 
-      if (this.uid === player2uid) {
+      if (UserModule.uid === player2uid) {
         this.isPlayer1 = false;
+        this.room.child("playing").set(true);
       } else {
         // 例外
         firebase
           .database()
           .ref("user")
-          .child(this.uid)
+          .child(UserModule.uid)
           .child("roomID")
           .set(0);
         alert("エラーが発生しました。ルーム選択画面に戻ります。");
@@ -149,30 +230,26 @@ export default class Game extends Vue {
       }
     }
 
-    const playing: boolean = (
-      await this.room.child("playing").once("value")
-    ).val();
+    // 初期設定
+    this.$set(this.board[0], 0, BOARD.PLAYER1);
+    this.$set(
+      this.board[this.board.length - 1],
+      this.board[this.board.length - 1].length - 1,
+      BOARD.PLAYER2
+    );
 
-    if (playing) {
-      // 既にプレイが始まっている場合
-      // 盤面取得
-      this.board = (await this.room.child("board").once("value")).val();
-    } else {
-      // 初期設定
-      this.$set(this.board[0], 0, BOARD.PLAYER1);
-      this.$set(
-        this.board[this.board.length - 1],
-        this.board[this.board.length - 1].length - 1,
-        BOARD.PLAYER2
-      );
-    }
-
-    this.setDisabledMove();
+    // プレイヤー2が席に付いた
+    this.room.child("playing").on("value", data => {
+      if (data.val()) {
+        this.playing = true;
+        this.start();
+      }
+    });
   }
 
-  private getPlayerIndex() {
+  private getPlayerIndex(isPlayer1: boolean = true) {
     let index: { x: number; y: number } = { x: -1, y: -1 };
-    const playerCell: number[] = this.player1Turn
+    const playerCell: number[] = isPlayer1
       ? [BOARD.PLAYER1, BOARD.BOMB_ON_PLAYER1]
       : [BOARD.PLAYER2, BOARD.BOMB_ON_PLAYER2];
     this.board.some((row, i) => {
@@ -188,252 +265,174 @@ export default class Game extends Vue {
   }
 
   private setDisabledMove() {
-    const unMovingList = [
-      BOARD.WALL,
-      BOARD.PLAYER1,
-      BOARD.PLAYER2,
-      BOARD.BOMB_ON_PLAYER1,
-      BOARD.BOMB_ON_PLAYER2,
-      BOARD.BOMB
-    ];
-    const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex();
-    if (x < 0 || y < 0) return;
-    this.disabledUp = y <= 0 || unMovingList.includes(this.board[y - 1][x]);
-    this.disabledLeft = x <= 0 || unMovingList.includes(this.board[y][x - 1]);
-    this.disabledRight =
-      x >= this.board[0].length - 1 ||
-      unMovingList.includes(this.board[y][x + 1]);
-    this.disabledDown =
-      y >= this.board.length - 1 || unMovingList.includes(this.board[y + 1][x]);
-    this.disabledBomb =
-      (this.player1Turn ? this.player1bomb : this.player2bomb) <= 0 ||
-      [BOARD.BOMB_ON_PLAYER1, BOARD.BOMB_ON_PLAYER2].includes(this.board[y][x]);
-    this.disabledRedo =
-      (this.player1Turn ? this.player1command : this.player2command).filter(
-        v => v
-      ).length === 0;
-    this.disabledEnd =
-      (this.player1Turn ? this.player1command : this.player2command).filter(
-        v => v
-      ).length < COMMAND_SIZE;
-    if (!this.disabledEnd) {
-      this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown = this.disabledBomb = true;
-    }
+    const playerCommand = this.isPlayer1
+      ? this.player1command
+      : this.player2command;
+    const playerBomb = this.isPlayer1 ? this.player1bomb : this.player2bomb;
+    this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown =
+      playerCommand.filter(c => c === MOVE.NULL).length === COMMAND_SIZE;
+    this.disabledBomb = playerBomb <= 0;
+    this.disabledRedo = playerCommand.filter(c => c === MOVE.NULL).length === 0;
   }
 
-  private move(action: symbol) {
-    const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex();
-    console.log(
-      this.player1command,
-      x,
-      y,
-      action,
-      MOVE.RIGHT,
-      this.player1Turn
-    );
+  private setCommand(action: symbol) {
     if (
       [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
     ) {
-      if (this.player1Turn) {
-        if (this.player1command.filter(v => v).length < COMMAND_SIZE) {
+      if (this.isPlayer1) {
+        if (
+          this.player1command.filter(c => c === MOVE.NULL).length < COMMAND_SIZE
+        ) {
           this.$set(
             this.player1command,
-            this.player1command.filter(v => v).length,
+            this.player1command.filter(c => c === MOVE.NULL).length,
             action
           );
-
           if (action === MOVE.BOMB) {
-            this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER1);
             this.player1bomb--;
-          } else {
-            if (this.board[y][x] === BOARD.BOMB_ON_PLAYER1) {
-              this.$set(this.board[y], x, BOARD.BOMB);
-            } else {
-              this.$set(this.board[y], x, BOARD.NONE);
-            }
-            switch (action) {
-              case MOVE.UP:
-                this.$set(this.board[y - 1], x, BOARD.PLAYER1);
-                break;
-              case MOVE.LEFT:
-                this.$set(this.board[y], x - 1, BOARD.PLAYER1);
-                break;
-              case MOVE.RIGHT:
-                this.$set(this.board[y], x + 1, BOARD.PLAYER1);
-                break;
-              case MOVE.DOWN:
-                this.$set(this.board[y + 1], x, BOARD.PLAYER1);
-                break;
-              default:
-                break;
-            }
           }
         }
       } else {
-        if (this.player2command.filter(v => v).length < COMMAND_SIZE) {
+        if (
+          this.player2command.filter(c => c === MOVE.NULL).length < COMMAND_SIZE
+        ) {
           this.$set(
             this.player2command,
-            this.player2command.filter(v => v).length,
+            this.player2command.filter(c => c === MOVE.NULL).length,
             action
           );
           if (action === MOVE.BOMB) {
-            this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER2);
             this.player2bomb--;
-          } else {
-            if (this.board[y][x] === BOARD.BOMB_ON_PLAYER2) {
-              this.$set(this.board[y], x, BOARD.BOMB);
-            } else {
-              this.$set(this.board[y], x, BOARD.NONE);
-            }
-            switch (action) {
-              case MOVE.UP:
-                this.$set(this.board[y - 1], x, BOARD.PLAYER2);
-                break;
-              case MOVE.LEFT:
-                this.$set(this.board[y], x - 1, BOARD.PLAYER2);
-                break;
-              case MOVE.RIGHT:
-                this.$set(this.board[y], x + 1, BOARD.PLAYER2);
-                break;
-              case MOVE.DOWN:
-                this.$set(this.board[y + 1], x, BOARD.PLAYER2);
-                break;
-              default:
-                break;
-            }
           }
         }
       }
     }
     if (action === MOVE.REDO) {
-      if (this.player1Turn) {
-        if (this.player1command.filter(v => v).length > 0) {
+      if (this.isPlayer1) {
+        if (this.player1command.filter(c => c === MOVE.NULL).length > 0) {
           const preMove = this.player1command[
-            this.player1command.filter(v => v).length - 1
+            this.player1command.filter(c => c === MOVE.NULL).length - 1
           ];
           this.$set(
             this.player1command,
-            this.player1command.filter(v => v).length - 1,
+            this.player1command.filter(c => c === MOVE.NULL).length - 1,
             null
           );
           if (preMove === MOVE.BOMB) {
-            this.$set(this.board[y], x, BOARD.PLAYER1);
             this.player1bomb++;
-          } else {
-            this.$set(this.board[y], x, BOARD.NONE);
-            switch (preMove) {
-              case MOVE.UP:
-                if (this.board[y + 1][x] === BOARD.BOMB) {
-                  this.$set(this.board[y + 1], x, BOARD.BOMB_ON_PLAYER1);
-                } else {
-                  this.$set(this.board[y + 1], x, BOARD.PLAYER1);
-                }
-                break;
-              case MOVE.LEFT:
-                if (this.board[y][x + 1] === BOARD.BOMB) {
-                  this.$set(this.board[y], x + 1, BOARD.BOMB_ON_PLAYER1);
-                } else {
-                  this.$set(this.board[y], x + 1, BOARD.PLAYER1);
-                }
-                break;
-              case MOVE.RIGHT:
-                if (this.board[y][x - 1] === BOARD.BOMB) {
-                  this.$set(this.board[y], x - 1, BOARD.BOMB_ON_PLAYER1);
-                } else {
-                  this.$set(this.board[y], x - 1, BOARD.PLAYER1);
-                }
-                break;
-              case MOVE.DOWN:
-                if (this.board[y - 1][x] === BOARD.BOMB) {
-                  this.$set(this.board[y - 1], x, BOARD.BOMB_ON_PLAYER1);
-                } else {
-                  this.$set(this.board[y - 1], x, BOARD.PLAYER1);
-                }
-                break;
-              default:
-                break;
-            }
           }
         }
       } else {
-        if (this.player2command.filter(v => v).length > 0) {
+        if (this.player2command.filter(c => c === MOVE.NULL).length > 0) {
           const preMove = this.player2command[
-            this.player2command.filter(v => v).length - 1
+            this.player2command.filter(c => c === MOVE.NULL).length - 1
           ];
           this.$set(
             this.player2command,
-            this.player2command.filter(v => v).length - 1,
+            this.player2command.filter(c => c === MOVE.NULL).length - 1,
             null
           );
           if (preMove === MOVE.BOMB) {
-            this.$set(this.board[y], x, BOARD.PLAYER2);
             this.player2bomb++;
-          } else {
-            this.$set(this.board[y], x, BOARD.NONE);
-            switch (preMove) {
-              case MOVE.UP:
-                if (this.board[y + 1][x] === BOARD.BOMB) {
-                  this.$set(this.board[y + 1], x, BOARD.BOMB_ON_PLAYER2);
-                } else {
-                  this.$set(this.board[y + 1], x, BOARD.PLAYER2);
-                }
-                break;
-              case MOVE.LEFT:
-                if (this.board[y][x + 1] === BOARD.BOMB) {
-                  this.$set(this.board[y], x + 1, BOARD.BOMB_ON_PLAYER2);
-                } else {
-                  this.$set(this.board[y], x + 1, BOARD.PLAYER2);
-                }
-                break;
-              case MOVE.RIGHT:
-                if (this.board[y][x - 1] === BOARD.BOMB) {
-                  this.$set(this.board[y], x - 1, BOARD.BOMB_ON_PLAYER2);
-                } else {
-                  this.$set(this.board[y], x - 1, BOARD.PLAYER2);
-                }
-                break;
-              case MOVE.DOWN:
-                if (this.board[y - 1][x] === BOARD.BOMB) {
-                  this.$set(this.board[y - 1], x, BOARD.BOMB_ON_PLAYER2);
-                } else {
-                  this.$set(this.board[y - 1], x, BOARD.PLAYER2);
-                }
-                break;
-              default:
-                break;
-            }
           }
         }
       }
     }
-    if (action === MOVE.END) {
-      // tableDatabase.set({
-      //   field: [this.player1bomb, this.player2bomb]
-      // });
-      if (this.log.length % 2 === 1) {
-        if (this.judge()) {
-          alert("GAME END");
-          // return;
+    this.setDisabledMove();
+  }
+
+  private randomCommand() {
+    const c = [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN];
+    return c[Math.floor(Math.random() * c.length)];
+  }
+
+  private move() {
+    {
+      const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
+        true
+      );
+      const action = (() => {
+        const c = this.player1command.shift() || MOVE.NULL;
+        return c === MOVE.NULL ? this.randomCommand() : c;
+      })();
+      this.player1command.push(MOVE.NULL);
+      if (
+        [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
+      ) {
+        if (action === MOVE.BOMB) {
+          this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER1);
+        } else {
+          if (this.board[y][x] === BOARD.BOMB_ON_PLAYER1) {
+            this.$set(this.board[y], x, BOARD.BOMB);
+          } else {
+            this.$set(this.board[y], x, BOARD.NONE);
+          }
+          switch (action) {
+            case MOVE.UP:
+              this.$set(this.board[y - 1], x, BOARD.PLAYER1);
+              break;
+            case MOVE.LEFT:
+              this.$set(this.board[y], x - 1, BOARD.PLAYER1);
+              break;
+            case MOVE.RIGHT:
+              this.$set(this.board[y], x + 1, BOARD.PLAYER1);
+              break;
+            case MOVE.DOWN:
+              this.$set(this.board[y + 1], x, BOARD.PLAYER1);
+              break;
+            default:
+              break;
+          }
         }
       }
-      if (this.player1Turn) {
-        this.log.push({ player: 1, command: this.player1command });
-        this.player2command = new Array(5).fill(null);
-      } else {
-        this.log.push({ player: 2, command: this.player2command });
-        this.player1command = new Array(5).fill(null);
-      }
-      this.player1Turn = !this.player1Turn;
     }
-    this.setDisabledMove();
+    {
+      const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
+        false
+      );
+      const action = (() => {
+        const c = this.player2command.shift() || MOVE.NULL;
+        return c === MOVE.NULL ? this.randomCommand() : c;
+      })();
+      this.player2command.push(MOVE.NULL);
+      if (
+        [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
+      ) {
+        if (action === MOVE.BOMB) {
+          this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER2);
+        } else {
+          if (this.board[y][x] === BOARD.BOMB_ON_PLAYER2) {
+            this.$set(this.board[y], x, BOARD.BOMB);
+          } else {
+            this.$set(this.board[y], x, BOARD.NONE);
+          }
+          switch (action) {
+            case MOVE.UP:
+              this.$set(this.board[y - 1], x, BOARD.PLAYER2);
+              break;
+            case MOVE.LEFT:
+              this.$set(this.board[y], x - 1, BOARD.PLAYER2);
+              break;
+            case MOVE.RIGHT:
+              this.$set(this.board[y], x + 1, BOARD.PLAYER2);
+              break;
+            case MOVE.DOWN:
+              this.$set(this.board[y + 1], x, BOARD.PLAYER2);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
   }
 
   get refs(): any {
     return this.$refs;
   }
 
-  private judge() {
-    this.refs.ref_board.explosion();
+  private async judge() {
+    await this.refs.ref_board.explosion();
     return false;
   }
 }

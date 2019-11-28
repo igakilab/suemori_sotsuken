@@ -40,7 +40,6 @@ export default class SignIn extends Vue {
   private items: { age: number; first_name: string; last_name: string }[] = [];
   private username: string = "";
   private password: string = "";
-  private userid: string = "";
   private loading: boolean = false;
 
   private signIn() {

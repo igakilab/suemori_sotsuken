@@ -52,7 +52,7 @@ export default class Command extends Vue {
   @Prop({ default: true }) private player1!: boolean;
   @Prop({ default: 5 }) private bomb!: number;
   @Prop({ default: true }) private turn!: boolean;
-  @Prop() command!: string[];
+  @Prop() command!: symbol[];
 
   get MOVE() {
     return MOVE;
