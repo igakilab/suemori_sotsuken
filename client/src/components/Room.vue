@@ -48,6 +48,12 @@ import firebase from "@/firebase/rdb.ts";
 import { Component, Vue, Prop } from "vue-property-decorator";
 import board from "@/game/board.ts";
 import UserModule from "@/store/user.ts";
+import {
+  COMMAND_SIZE,
+  MOVE,
+  fromCommand,
+  toCommandString
+} from "@/components/Game.vue";
 
 @Component
 export default class Room extends Vue {
@@ -113,12 +119,14 @@ export default class Room extends Vue {
       end: boolean;
       player1: {
         uid: string;
-        logs: { player: number; command: string[] }[];
+        logs: string[][];
+        command: string[];
         bomb: number;
       };
       player2: {
         uid: string | null;
-        logs: { player: number; command: string[] }[];
+        logs: string[][];
+        command: string[];
         bomb: number;
       };
       turn: boolean;
@@ -131,11 +139,13 @@ export default class Room extends Vue {
       player1: {
         uid: UserModule.uid,
         logs: [],
+        command: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
         bomb: this.bomb
       },
       player2: {
         uid: null,
         logs: [],
+        command: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
         bomb: this.bomb
       },
       turn: true

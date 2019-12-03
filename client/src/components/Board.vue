@@ -103,7 +103,7 @@ export default class Board extends Vue {
             cell
           )
         ) {
-          const unbrastList = [
+          const unbrastList: BOARD[] = [
             BOARD.WALL,
             BOARD.BOMB,
             BOARD.BOMB_ON_PLAYER1,

@@ -48,35 +48,133 @@
 <script lang="ts">
 import board from "@/game/board.ts";
 import firebase from "@/firebase/rdb.ts";
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import Command from "@/components/Command.vue";
 import Board from "@/components/Board.vue";
 import Controller from "@/components/Controller.vue";
 import UserModule from "@/store/user.ts";
 
-const COMMAND_SIZE: number = 5;
+export const COMMAND_SIZE: number = 5;
 const sleep = (ms: number) => new Promise(f => setTimeout(f, ms));
-export const BOARD = {
-  NONE: 0,
-  PLAYER1: 100,
-  PLAYER2: 101,
-  WALL: 1,
-  BOMB: 2,
-  BOMB_ON_PLAYER1: 1001,
-  BOMB_ON_PLAYER2: 1002,
-  EXPLOSION: 9999,
-  BLAST: 9998
-};
-export const MOVE = {
-  UP: Symbol("UP"),
-  LEFT: Symbol("LEFT"),
-  RIGHT: Symbol("RIGHT"),
-  DOWN: Symbol("DOWN"),
-  BOMB: Symbol("BOMB"),
-  REDO: Symbol("REDO"),
-  END: Symbol("END"),
-  NULL: Symbol("NULL")
-};
+export enum BOARD {
+  NONE,
+  PLAYER1,
+  PLAYER2,
+  WALL,
+  BOMB,
+  BOMB_ON_PLAYER1,
+  BOMB_ON_PLAYER2,
+  EXPLOSION,
+  BLAST
+}
+export enum MOVE {
+  UP,
+  LEFT,
+  RIGHT,
+  DOWN,
+  BOMB,
+  REDO,
+  END,
+  NULL
+}
+
+export function fromCommand(commands: string[]): MOVE[] {
+  return commands.map(command => {
+    switch (command) {
+      case "UP":
+        return MOVE.UP;
+      case "LEFT":
+        return MOVE.LEFT;
+      case "RIGHT":
+        return MOVE.RIGHT;
+      case "DOWN":
+        return MOVE.DOWN;
+      case "BOMB":
+        return MOVE.BOMB;
+      default:
+        return MOVE.NULL;
+    }
+  });
+}
+
+export function toCommandString(commands: MOVE[]) {
+  return commands.map(command => {
+    switch (command) {
+      case MOVE.UP:
+        return "UP";
+      case MOVE.LEFT:
+        return "LEFT";
+      case MOVE.RIGHT:
+        return "RIGHT";
+      case MOVE.DOWN:
+        return "DOWN";
+      case MOVE.BOMB:
+        return "BOMB";
+      default:
+        return "NULL";
+    }
+  });
+}
+
+export function fromBoard(board: (number | string)[][]) {
+  return board.map(row =>
+    row.map(cell => {
+      switch (cell) {
+        case 0:
+        case "　":
+          return BOARD.NONE;
+        case 1:
+        case "■":
+          return BOARD.WALL;
+        case "１":
+          return BOARD.PLAYER1;
+        case "２":
+          return BOARD.PLAYER2;
+        case "◎":
+          return BOARD.BOMB;
+        case "①":
+          return BOARD.BOMB_ON_PLAYER1;
+        case "②":
+          return BOARD.BOMB_ON_PLAYER2;
+        case "Ｘ":
+          return BOARD.EXPLOSION;
+        case "＋":
+          return BOARD.BLAST;
+        default:
+          return BOARD.NONE;
+      }
+    })
+  );
+}
+
+export function toBoardString(board: BOARD[][]) {
+  return board.map(row =>
+    row.map(cell => {
+      switch (cell) {
+        case BOARD.NONE:
+          return "　";
+        case BOARD.WALL:
+          return "■";
+        case BOARD.PLAYER1:
+          return "１";
+        case BOARD.PLAYER2:
+          return "２";
+        case BOARD.BOMB:
+          return "◎";
+        case BOARD.BOMB_ON_PLAYER1:
+          return "①";
+        case BOARD.BOMB_ON_PLAYER2:
+          return "②";
+        case BOARD.EXPLOSION:
+          return "Ｘ";
+        case BOARD.BLAST:
+          return "＋";
+        default:
+          return "　";
+      }
+    })
+  );
+}
 
 @Component({
   components: {
@@ -86,7 +184,7 @@ export const MOVE = {
   }
 })
 export default class Game extends Vue {
-  private board: number[][] = board;
+  private board: BOARD[][] = fromBoard(board);
   private disabledUp: boolean = true;
   private disabledLeft: boolean = true;
   private disabledRight: boolean = true;
@@ -94,12 +192,12 @@ export default class Game extends Vue {
   private disabledBomb: boolean = true;
   private disabledRedo: boolean = true;
   private disabledEnd: boolean = true;
-  private player1command: symbol[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
-  private player2command: symbol[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private player1command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private player2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private player1bomb: number = 5;
   private player2bomb: number = 5;
-  private log: symbol[][] = [];
-  private room: firebase.database.Reference | null = null;
+  private log: MOVE[][] = [];
+  private room: firebase.database.Reference = firebase.database().ref();
   private isPlayer1: boolean = true;
   private playing: boolean = false;
   private second: number = 0;
@@ -113,6 +211,20 @@ export default class Game extends Vue {
     }
   }
 
+  @Watch("player1command")
+  public player1commandChanged() {
+    const player = this.room.child("player1");
+    player.child("bomb").set(this.player1bomb);
+    player.child("command").set(toCommandString(this.player1command));
+  }
+
+  @Watch("player2command")
+  public player2commandChanged(v: any, o: any) {
+    const player = this.room.child("player2");
+    player.child("bomb").set(this.player2bomb);
+    player.child("command").set(toCommandString(this.player2command));
+  }
+
   private async start() {
     if (!this.room) {
       alert("ルーム情報を失いました。ルーム選択画面に戻ります。");
@@ -122,13 +234,13 @@ export default class Game extends Vue {
 
     this.setDisabledMove();
 
-    const player = `player${this.isPlayer1 ? 1 : 2}`;
+    const opponent = `player${!this.isPlayer1 ? 1 : 2}`;
 
     this.room
-      .child(player)
+      .child(opponent)
       .child("bomb")
       .on("value", data => {
-        if (this.isPlayer1) {
+        if (!this.isPlayer1) {
           this.player1bomb = data.val();
         } else {
           this.player2bomb = data.val();
@@ -136,23 +248,42 @@ export default class Game extends Vue {
       });
 
     this.room
-      .child(player)
+      .child(opponent)
       .child("command")
       .on("value", data => {
-        // 次回ここから
-        // if (this.isPlayer1) {
-        //   this.player1command = data.val();
-        // } else {
-        //   this.player2command = data.val();
-        // }
+        if (!this.isPlayer1) {
+          this.player1command = fromCommand(data.val());
+        } else {
+          this.player2command = fromCommand(data.val());
+        }
       });
+
+    if (!this.isPlayer1) {
+      this.room.child("board").on("value", data => {
+        this.board = fromBoard(data.val());
+      });
+      this.room
+        .child("player2")
+        .child("command")
+        .on("value", data => {
+          this.player2command = fromCommand(data.val());
+        });
+    }
 
     // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
     for await (const value of this.makeRangeIterator()) {
       this.second = value;
-      if (this.second % 5 === 0) {
+      if (this.second > 0 && this.second % 6 === 0 && this.isPlayer1) {
         // なんか処理
+        this.move();
+        this.room.child("board").set(toBoardString(this.board));
+        this.room
+          .child("player2")
+          .child("command")
+          .set(toCommandString(this.player2command));
       }
+      // 一秒前?に動かせなくしないとコンフリクトが発生するので要検討
+      this.setDisabledMove();
     }
   }
 
@@ -237,6 +368,7 @@ export default class Game extends Vue {
       this.board[this.board.length - 1].length - 1,
       BOARD.PLAYER2
     );
+    this.room.child("board").set(toBoardString(this.board));
 
     // プレイヤー2が席に付いた
     this.room.child("playing").on("value", data => {
@@ -270,22 +402,24 @@ export default class Game extends Vue {
       : this.player2command;
     const playerBomb = this.isPlayer1 ? this.player1bomb : this.player2bomb;
     this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown =
-      playerCommand.filter(c => c === MOVE.NULL).length === COMMAND_SIZE;
-    this.disabledBomb = playerBomb <= 0;
-    this.disabledRedo = playerCommand.filter(c => c === MOVE.NULL).length === 0;
+      playerCommand.filter(c => c !== MOVE.NULL).length === COMMAND_SIZE;
+    this.disabledBomb =
+      playerBomb <= 0 ||
+      playerCommand.filter(c => c !== MOVE.NULL).length === COMMAND_SIZE;
+    this.disabledRedo = playerCommand.filter(c => c !== MOVE.NULL).length === 0;
   }
 
-  private setCommand(action: symbol) {
+  private setCommand(action: MOVE) {
     if (
       [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
     ) {
       if (this.isPlayer1) {
         if (
-          this.player1command.filter(c => c === MOVE.NULL).length < COMMAND_SIZE
+          this.player1command.filter(c => c !== MOVE.NULL).length < COMMAND_SIZE
         ) {
           this.$set(
             this.player1command,
-            this.player1command.filter(c => c === MOVE.NULL).length,
+            this.player1command.filter(c => c !== MOVE.NULL).length,
             action
           );
           if (action === MOVE.BOMB) {
@@ -294,11 +428,11 @@ export default class Game extends Vue {
         }
       } else {
         if (
-          this.player2command.filter(c => c === MOVE.NULL).length < COMMAND_SIZE
+          this.player2command.filter(c => c !== MOVE.NULL).length < COMMAND_SIZE
         ) {
           this.$set(
             this.player2command,
-            this.player2command.filter(c => c === MOVE.NULL).length,
+            this.player2command.filter(c => c !== MOVE.NULL).length,
             action
           );
           if (action === MOVE.BOMB) {
@@ -309,28 +443,28 @@ export default class Game extends Vue {
     }
     if (action === MOVE.REDO) {
       if (this.isPlayer1) {
-        if (this.player1command.filter(c => c === MOVE.NULL).length > 0) {
+        if (this.player1command.filter(c => c !== MOVE.NULL).length > 0) {
           const preMove = this.player1command[
-            this.player1command.filter(c => c === MOVE.NULL).length - 1
+            this.player1command.filter(c => c !== MOVE.NULL).length - 1
           ];
           this.$set(
             this.player1command,
-            this.player1command.filter(c => c === MOVE.NULL).length - 1,
-            null
+            this.player1command.filter(c => c !== MOVE.NULL).length - 1,
+            MOVE.NULL
           );
           if (preMove === MOVE.BOMB) {
             this.player1bomb++;
           }
         }
       } else {
-        if (this.player2command.filter(c => c === MOVE.NULL).length > 0) {
+        if (this.player2command.filter(c => c !== MOVE.NULL).length > 0) {
           const preMove = this.player2command[
-            this.player2command.filter(c => c === MOVE.NULL).length - 1
+            this.player2command.filter(c => c !== MOVE.NULL).length - 1
           ];
           this.$set(
             this.player2command,
-            this.player2command.filter(c => c === MOVE.NULL).length - 1,
-            null
+            this.player2command.filter(c => c !== MOVE.NULL).length - 1,
+            MOVE.NULL
           );
           if (preMove === MOVE.BOMB) {
             this.player2bomb++;
@@ -347,80 +481,76 @@ export default class Game extends Vue {
   }
 
   private move() {
-    {
+    const unMovingList = [
+      BOARD.PLAYER1,
+      BOARD.PLAYER2,
+      BOARD.WALL,
+      BOARD.BOMB,
+      BOARD.BOMB_ON_PLAYER1,
+      BOARD.BOMB_ON_PLAYER2
+    ];
+    for (const isPlayer1 of [true, false]) {
       const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
-        true
+        isPlayer1
       );
+      const command = isPlayer1 ? this.player1command : this.player2command;
+      const boardPlayer = isPlayer1 ? BOARD.PLAYER1 : BOARD.PLAYER2;
+      const boardBombOnPlayer = isPlayer1
+        ? BOARD.BOMB_ON_PLAYER1
+        : BOARD.BOMB_ON_PLAYER2;
+
       const action = (() => {
-        const c = this.player1command.shift() || MOVE.NULL;
+        const c = command.shift() || MOVE.NULL;
         return c === MOVE.NULL ? this.randomCommand() : c;
       })();
-      this.player1command.push(MOVE.NULL);
+      command.push(MOVE.NULL);
       if (
         [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
       ) {
         if (action === MOVE.BOMB) {
-          this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER1);
+          this.$set(this.board[y], x, boardBombOnPlayer);
         } else {
-          if (this.board[y][x] === BOARD.BOMB_ON_PLAYER1) {
-            this.$set(this.board[y], x, BOARD.BOMB);
-          } else {
-            this.$set(this.board[y], x, BOARD.NONE);
-          }
+          let moving = false;
           switch (action) {
             case MOVE.UP:
-              this.$set(this.board[y - 1], x, BOARD.PLAYER1);
+              if (y > 0 && !unMovingList.includes(this.board[y - 1][x])) {
+                this.$set(this.board[y - 1], x, boardPlayer);
+                moving = true;
+              }
               break;
             case MOVE.LEFT:
-              this.$set(this.board[y], x - 1, BOARD.PLAYER1);
+              if (x > 0 && !unMovingList.includes(this.board[y][x - 1])) {
+                this.$set(this.board[y], x - 1, boardPlayer);
+                moving = true;
+              }
               break;
             case MOVE.RIGHT:
-              this.$set(this.board[y], x + 1, BOARD.PLAYER1);
+              if (
+                x < this.board[y].length - 1 &&
+                !unMovingList.includes(this.board[y][x + 1])
+              ) {
+                this.$set(this.board[y], x + 1, boardPlayer);
+                moving = true;
+              }
               break;
             case MOVE.DOWN:
-              this.$set(this.board[y + 1], x, BOARD.PLAYER1);
+              if (
+                y < this.board.length - 1 &&
+                !unMovingList.includes(this.board[y + 1][x])
+              ) {
+                this.$set(this.board[y + 1], x, boardPlayer);
+                moving = true;
+              }
               break;
             default:
               break;
           }
-        }
-      }
-    }
-    {
-      const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
-        false
-      );
-      const action = (() => {
-        const c = this.player2command.shift() || MOVE.NULL;
-        return c === MOVE.NULL ? this.randomCommand() : c;
-      })();
-      this.player2command.push(MOVE.NULL);
-      if (
-        [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
-      ) {
-        if (action === MOVE.BOMB) {
-          this.$set(this.board[y], x, BOARD.BOMB_ON_PLAYER2);
-        } else {
-          if (this.board[y][x] === BOARD.BOMB_ON_PLAYER2) {
-            this.$set(this.board[y], x, BOARD.BOMB);
-          } else {
-            this.$set(this.board[y], x, BOARD.NONE);
-          }
-          switch (action) {
-            case MOVE.UP:
-              this.$set(this.board[y - 1], x, BOARD.PLAYER2);
-              break;
-            case MOVE.LEFT:
-              this.$set(this.board[y], x - 1, BOARD.PLAYER2);
-              break;
-            case MOVE.RIGHT:
-              this.$set(this.board[y], x + 1, BOARD.PLAYER2);
-              break;
-            case MOVE.DOWN:
-              this.$set(this.board[y + 1], x, BOARD.PLAYER2);
-              break;
-            default:
-              break;
+          if (moving) {
+            if (this.board[y][x] === boardBombOnPlayer) {
+              this.$set(this.board[y], x, BOARD.BOMB);
+            } else {
+              this.$set(this.board[y], x, BOARD.NONE);
+            }
           }
         }
       }
