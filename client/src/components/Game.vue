@@ -1,38 +1,40 @@
 <template>
   <div id="game">
-    <b-modal id="resultModal" @ok="redoRoom" ok-only
-      ><div v-if="judge === JUDGE.DRAW">DRAW!!</div>
-      <div
-        v-else-if="
-          (judge === JUDGE.P1_WIN && isPlayer1) ||
-            (judge === JUDGE.P2_WIN && !isPlayer1)
-        "
+    <div id="game1">
+      <b-modal id="resultModal" @ok="redoRoom" ok-only
+        ><div v-if="judge === JUDGE.DRAW">DRAW!!</div>
+        <div
+          v-else-if="
+            (judge === JUDGE.P1_WIN && isPlayer1) ||
+              (judge === JUDGE.P2_WIN && !isPlayer1)
+          "
+        >
+          You are WIN!!
+        </div>
+        <div
+          v-else-if="
+            (judge === JUDGE.P2_WIN && isPlayer1) ||
+              (judge === JUDGE.P1_WIN && !isPlayer1)
+          "
+        >
+          You are Lose...
+        </div></b-modal
       >
-        You are WIN!!
-      </div>
-      <div
-        v-else-if="
-          (judge === JUDGE.P2_WIN && isPlayer1) ||
-            (judge === JUDGE.P1_WIN && !isPlayer1)
-        "
-      >
-        You are Lose...
-      </div></b-modal
-    >
-    <b-alert show variant="primary" v-if="!playing"
-      >プレイヤーを待機しています…<b-spinner
-        style="margin-left: 10px;"
-        variant="primary"
-        label="Spinning"
-      ></b-spinner
-    ></b-alert>
-    <b-alert v-else show variant="success"
-      >ゲームスタート！ 次の動作まで残り{{ 5 - (second % 6) }}秒<b-spinner
-        variant="success"
-        label="Spinning"
-        style="margin-left: 15px;"
-      ></b-spinner
-    ></b-alert>
+      <b-alert show variant="primary" v-if="!playing"
+        >プレイヤーを待機しています…<b-spinner
+          style="margin-left: 10px;"
+          variant="primary"
+          label="Spinning"
+        ></b-spinner
+      ></b-alert>
+      <b-alert v-else show variant="success"
+        >ゲームスタート！ 次の動作まで残り{{ 5 - (second % 6) }}秒<b-spinner
+          variant="success"
+          label="Spinning"
+          style="margin-left: 15px;"
+        ></b-spinner
+      ></b-alert>
+    </div>
     <Command
       :player1="true"
       :turn="isPlayer1"
@@ -784,6 +786,15 @@ export default class Game extends Vue {
   text-align: center;
   color: #2c3e50;
   margin-top: 20px;
-  margin-left: 20px;
+  margin-left: 380px;
+}
+#game1 {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 20px;
+  margin-left: -380px;
 }
 </style>

@@ -5,7 +5,7 @@
         <td
           v-for="(cell, index) in row"
           :key="`cell$${index}`"
-          style="border:1px dotted #333; width: 36px; height: 36px; text-align: center; vertical-align: middle;"
+          style="border:1px dotted #333; width: 50px; height: 50px; text-align: center; vertical-align: middle;"
         >
           <div
             v-if="cell === BOARD.WALL"
