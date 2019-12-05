@@ -1,67 +1,67 @@
 <template>
   <div id="game">
-    <div id="game1">
-      <b-modal id="resultModal" @ok="redoRoom" ok-only
-        ><div v-if="judge === JUDGE.DRAW">DRAW!!</div>
-        <div
-          v-else-if="
-            (judge === JUDGE.P1_WIN && isPlayer1) ||
-              (judge === JUDGE.P2_WIN && !isPlayer1)
-          "
-        >
-          You are WIN!!
-        </div>
-        <div
-          v-else-if="
-            (judge === JUDGE.P2_WIN && isPlayer1) ||
-              (judge === JUDGE.P1_WIN && !isPlayer1)
-          "
-        >
-          You are Lose...
-        </div></b-modal
+    <b-modal id="resultModal" @ok="redoRoom" ok-only
+      ><div v-if="judge === JUDGE.DRAW">DRAW!!</div>
+      <div
+        v-else-if="
+          (judge === JUDGE.P1_WIN && isPlayer1) ||
+            (judge === JUDGE.P2_WIN && !isPlayer1)
+        "
       >
-      <b-alert show variant="primary" v-if="!playing"
-        >プレイヤーを待機しています…<b-spinner
-          style="margin-left: 10px;"
-          variant="primary"
-          label="Spinning"
-        ></b-spinner
-      ></b-alert>
-      <b-alert v-else show variant="success"
-        >ゲームスタート！ 次の動作まで残り{{ 5 - (second % 6) }}秒<b-spinner
-          variant="success"
-          label="Spinning"
-          style="margin-left: 15px;"
-        ></b-spinner
-      ></b-alert>
-    </div>
-    <Command
-      :player1="true"
-      :turn="isPlayer1"
-      :command="player1command"
-      :bomb="player1bomb"
-      style="float: left;"
-    />
-    <Board :board="board" ref="ref_board" />
-    <div style="float: left;">
+        You are WIN!!
+      </div>
+      <div
+        v-else-if="
+          (judge === JUDGE.P2_WIN && isPlayer1) ||
+            (judge === JUDGE.P1_WIN && !isPlayer1)
+        "
+      >
+        You are Lose...
+      </div></b-modal
+    >
+    <b-alert show variant="primary" v-if="!playing"
+      >プレイヤーを待機しています…<b-spinner
+        style="margin-left: 10px;"
+        variant="primary"
+        label="Spinning"
+      ></b-spinner
+    ></b-alert>
+    <b-alert v-else show variant="success"
+      >ゲームスタート！ 次の動作まで残り{{ 5 - (second % 6) }}秒<b-spinner
+        variant="success"
+        label="Spinning"
+        style="margin-left: 15px;"
+      ></b-spinner
+    ></b-alert>
+    <div id="game1">
       <Command
-        :player1="false"
-        :turn="!isPlayer1"
-        :command="player2command"
-        :bomb="player2bomb"
+        :player1="true"
+        :turn="isPlayer1"
+        :command="player1command"
+        :bomb="player1bomb"
         style="float: left;"
       />
-      <Controller
-        @click="setCommand"
-        :disabledUp="disabledUp"
-        :disabledLeft="disabledLeft"
-        :disabledRight="disabledRight"
-        :disabledDown="disabledDown"
-        :disabledBomb="disabledBomb"
-        :disabledRedo="disabledRedo"
-        :disabledEnd="disabledEnd"
-        style="clear: both; margin-top: 480px;"
-      />
+      <Board :board="board" ref="ref_board" />
+      <div style="float: left;">
+        <Command
+          :player1="false"
+          :turn="!isPlayer1"
+          :command="player2command"
+          :bomb="player2bomb"
+          style="float: left;"
+        />
+        <Controller
+          @click="setCommand"
+          :disabledUp="disabledUp"
+          :disabledLeft="disabledLeft"
+          :disabledRight="disabledRight"
+          :disabledDown="disabledDown"
+          :disabledBomb="disabledBomb"
+          :disabledRedo="disabledRedo"
+          :disabledEnd="disabledEnd"
+          style="clear: both; margin-top: 480px;"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -786,7 +786,6 @@ export default class Game extends Vue {
   text-align: center;
   color: #2c3e50;
   margin-top: 20px;
-  margin-left: 380px;
 }
 #game1 {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
@@ -795,6 +794,6 @@ export default class Game extends Vue {
   text-align: center;
   color: #2c3e50;
   margin-top: 20px;
-  margin-left: -380px;
+  display: inline-block;
 }
 </style>
