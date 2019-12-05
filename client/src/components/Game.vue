@@ -61,7 +61,10 @@ export enum BOARD {
   PLAYER1,
   PLAYER2,
   WALL,
-  BOMB,
+  BOMB_3,
+  BOMB_2,
+  BOMB_1,
+  BOMB_0,
   BOMB_ON_PLAYER1,
   BOMB_ON_PLAYER2,
   EXPLOSION,
@@ -130,11 +133,15 @@ export function fromBoard(board: (number | string)[][]) {
           return BOARD.PLAYER1;
         case "２":
           return BOARD.PLAYER2;
-        case "◎":
-          return BOARD.BOMB;
-        case "①":
-          return BOARD.BOMB_ON_PLAYER1;
+        case "③":
+          return BOARD.BOMB_3;
         case "②":
+          return BOARD.BOMB_2;
+        case "①":
+          return BOARD.BOMB_1;
+        case "壱":
+          return BOARD.BOMB_ON_PLAYER1;
+        case "弐":
           return BOARD.BOMB_ON_PLAYER2;
         case "Ｘ":
           return BOARD.EXPLOSION;
@@ -159,12 +166,16 @@ export function toBoardString(board: BOARD[][]) {
           return "１";
         case BOARD.PLAYER2:
           return "２";
-        case BOARD.BOMB:
-          return "◎";
-        case BOARD.BOMB_ON_PLAYER1:
-          return "①";
-        case BOARD.BOMB_ON_PLAYER2:
+        case BOARD.BOMB_3:
+          return "③";
+        case BOARD.BOMB_2:
           return "②";
+        case BOARD.BOMB_1:
+          return "①";
+        case BOARD.BOMB_ON_PLAYER1:
+          return "壱";
+        case BOARD.BOMB_ON_PLAYER2:
+          return "弐";
         case BOARD.EXPLOSION:
           return "Ｘ";
         case BOARD.BLAST:
@@ -261,6 +272,7 @@ export default class Game extends Vue {
     if (!this.isPlayer1) {
       this.room.child("board").on("value", data => {
         this.board = fromBoard(data.val());
+        sleep(1000).then(() => this.clearBoard());
       });
       this.room
         .child("player2")
@@ -275,8 +287,28 @@ export default class Game extends Vue {
       this.second = value;
       if (this.second > 0 && this.second % 6 === 0 && this.isPlayer1) {
         // なんか処理
+        const bombPoint = [];
+        this.board = this.board.map((row, j) =>
+          row.map((cell, i) => {
+            switch (cell) {
+              case BOARD.BOMB_3:
+                bombPoint.push({ x: j, y: i });
+                return BOARD.BOMB_2;
+              case BOARD.BOMB_2:
+                bombPoint.push({ x: j, y: i });
+                return BOARD.BOMB_1;
+              case BOARD.BOMB_1:
+                bombPoint.push({ x: j, y: i });
+                return BOARD.BOMB_0;
+              default:
+                return cell;
+            }
+          })
+        );
         this.move();
+        const explosionPoints = this.explosion();
         this.room.child("board").set(toBoardString(this.board));
+        sleep(1000).then(() => this.clearBoard(explosionPoints));
         this.room
           .child("player2")
           .child("command")
@@ -285,6 +317,91 @@ export default class Game extends Vue {
       // 一秒前?に動かせなくしないとコンフリクトが発生するので要検討
       this.setDisabledMove();
     }
+  }
+
+  private clearBoard(explosionPoints?: { x: number; y: number }[]) {
+    if (explosionPoints) {
+      explosionPoints.forEach(point => {
+        this.$set(this.board[point.y], point.x, BOARD.NONE);
+      });
+    } else {
+      this.board.forEach((row, i) =>
+        row.forEach((cell, j) => {
+          if ([BOARD.BLAST, BOARD.EXPLOSION].includes(cell)) {
+            this.$set(this.board[i], j, BOARD.NONE);
+          }
+        })
+      );
+    }
+  }
+
+  private explosion(causeExplosion = false) {
+    const explosionPoints: { x: number; y: number }[] = [];
+    this.board.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        if (cell === BOARD.BOMB_0) {
+          const unbrastList: BOARD[] = [BOARD.WALL];
+          if (
+            j > 0 &&
+            i > 0 &&
+            !unbrastList.includes(this.board[i - 1][j - 1])
+          ) {
+            this.$set(this.board[i - 1], j - 1, BOARD.BLAST);
+            explosionPoints.push({ x: j - 1, y: i - 1 });
+          }
+          if (j > 0 && !unbrastList.includes(this.board[i][j - 1])) {
+            this.$set(this.board[i], j - 1, BOARD.BLAST);
+            explosionPoints.push({ x: j - 1, y: i });
+          }
+          if (
+            j > 0 &&
+            i < this.board[0].length - 1 &&
+            !unbrastList.includes(this.board[i + 1][j - 1])
+          ) {
+            this.$set(this.board[i + 1], j - 1, BOARD.BLAST);
+            explosionPoints.push({ x: j - 1, y: i + 1 });
+          }
+          if (i > 0 && !unbrastList.includes(this.board[i - 1][j])) {
+            this.$set(this.board[i - 1], j, BOARD.BLAST);
+            explosionPoints.push({ x: j, y: i - 1 });
+          }
+          if (
+            i < this.board[0].length - 1 &&
+            !unbrastList.includes(this.board[i + 1][j])
+          ) {
+            this.$set(this.board[i + 1], j, BOARD.BLAST);
+            explosionPoints.push({ x: j, y: i + 1 });
+          }
+          if (
+            j < this.board.length - 1 &&
+            i > 0 &&
+            !unbrastList.includes(this.board[i - 1][j + 1])
+          ) {
+            this.$set(this.board[i - 1], j + 1, BOARD.BLAST);
+            explosionPoints.push({ x: j + 1, y: i - 1 });
+          }
+          if (
+            j < this.board.length - 1 &&
+            !unbrastList.includes(this.board[i][j + 1])
+          ) {
+            this.$set(this.board[i], j + 1, BOARD.BLAST);
+            explosionPoints.push({ x: j + 1, y: i });
+          }
+          if (
+            j < this.board.length - 1 &&
+            i < this.board[0].length - 1 &&
+            !unbrastList.includes(this.board[i + 1][j + 1])
+          ) {
+            this.$set(this.board[i + 1], j + 1, BOARD.BLAST);
+            explosionPoints.push({ x: j + 1, y: i + 1 });
+          }
+          this.$set(this.board[i], j, BOARD.EXPLOSION);
+          explosionPoints.push({ x: j, y: i });
+        }
+      });
+    });
+
+    return explosionPoints;
   }
 
   public async created() {
@@ -485,7 +602,10 @@ export default class Game extends Vue {
       BOARD.PLAYER1,
       BOARD.PLAYER2,
       BOARD.WALL,
-      BOARD.BOMB,
+      BOARD.BOMB_3,
+      BOARD.BOMB_2,
+      BOARD.BOMB_1,
+      BOARD.BOMB_0,
       BOARD.BOMB_ON_PLAYER1,
       BOARD.BOMB_ON_PLAYER2
     ];
@@ -547,7 +667,7 @@ export default class Game extends Vue {
           }
           if (moving) {
             if (this.board[y][x] === boardBombOnPlayer) {
-              this.$set(this.board[y], x, BOARD.BOMB);
+              this.$set(this.board[y], x, BOARD.BOMB_3);
             } else {
               this.$set(this.board[y], x, BOARD.NONE);
             }

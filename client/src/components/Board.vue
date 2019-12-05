@@ -11,8 +11,26 @@
             v-if="cell === BOARD.WALL"
             style="width: 100%; height: 100%; background: black;"
           ></div>
-          <div v-if="cell === BOARD.BOMB" style="line-height: 0;">
+          <div v-if="cell === BOARD.BOMB_3" style="line-height: 0;">
             <font-awesome-icon icon="bomb" size="2x" />
+            <span
+              style="font-weight: bold; color: white; position: absolute; margin-left: -23px; margin-top: 20px;"
+              >3</span
+            >
+          </div>
+          <div v-if="cell === BOARD.BOMB_2" style="line-height: 0;">
+            <font-awesome-icon icon="bomb" size="2x" />
+            <span
+              style="font-weight: bold; color: white; position: absolute; margin-left: -23px; margin-top: 20px;"
+              >2</span
+            >
+          </div>
+          <div v-if="cell === BOARD.BOMB_1" style="line-height: 0;">
+            <font-awesome-icon icon="bomb" size="2x" />
+            <span
+              style="font-weight: bold; color: white; position: absolute; margin-left: -23px; margin-top: 20px;"
+              >1</span
+            >
           </div>
           <div v-else-if="cell === BOARD.PLAYER1" style="line-height: 0;">
             <font-awesome-icon icon="male" size="2x" style="color: blue;" />
@@ -93,78 +111,6 @@ export default class Board extends Vue {
 
   get BOARD() {
     return BOARD;
-  }
-
-  public async explosion() {
-    this.board.forEach((row, i) => {
-      row.forEach((cell, j) => {
-        if (
-          [BOARD.BOMB, BOARD.BOMB_ON_PLAYER1, BOARD.BOMB_ON_PLAYER2].includes(
-            cell
-          )
-        ) {
-          const unbrastList: BOARD[] = [
-            BOARD.WALL,
-            BOARD.BOMB,
-            BOARD.BOMB_ON_PLAYER1,
-            BOARD.BOMB_ON_PLAYER2
-          ];
-          if (
-            j > 0 &&
-            i > 0 &&
-            !unbrastList.includes(this.board[i - 1][j - 1])
-          ) {
-            this.$set(this.board[i - 1], j - 1, BOARD.BLAST);
-          }
-          if (j > 0 && !unbrastList.includes(this.board[i][j - 1])) {
-            this.$set(this.board[i], j - 1, BOARD.BLAST);
-          }
-          if (
-            j > 0 &&
-            i < this.board[0].length - 1 &&
-            !unbrastList.includes(this.board[i + 1][j - 1])
-          ) {
-            this.$set(this.board[i + 1], j - 1, BOARD.BLAST);
-          }
-          if (i > 0 && !unbrastList.includes(this.board[i - 1][j])) {
-            this.$set(this.board[i - 1], j, BOARD.BLAST);
-          }
-          if (
-            i < this.board[0].length - 1 &&
-            !unbrastList.includes(this.board[i + 1][j])
-          ) {
-            this.$set(this.board[i + 1], j, BOARD.BLAST);
-          }
-          if (
-            j < this.board.length - 1 &&
-            i > 0 &&
-            !unbrastList.includes(this.board[i - 1][j + 1])
-          ) {
-            this.$set(this.board[i - 1], j + 1, BOARD.BLAST);
-          }
-          if (
-            j < this.board.length - 1 &&
-            !unbrastList.includes(this.board[i][j + 1])
-          ) {
-            this.$set(this.board[i], j + 1, BOARD.BLAST);
-          }
-          if (
-            j < this.board.length - 1 &&
-            i < this.board[0].length - 1 &&
-            !unbrastList.includes(this.board[i + 1][j + 1])
-          ) {
-            this.$set(this.board[i + 1], j + 1, BOARD.BLAST);
-          }
-          this.$set(this.board[i], j, BOARD.EXPLOSION);
-        }
-      });
-    });
-
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, 1000);
-    });
   }
 }
 </script>
