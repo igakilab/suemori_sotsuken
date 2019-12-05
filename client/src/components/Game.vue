@@ -1,6 +1,7 @@
 <template>
   <div id="game">
-    <b-alert show variant="primary" v-if="!playing"
+    <div id="game1">
+    <b-alert show variant="primary" v-if="!playing" 
       >プレイヤーを待機しています…<b-spinner
         style="margin-left: 10px;"
         variant="primary"
@@ -14,6 +15,7 @@
         style="margin-left: 15px;"
       ></b-spinner
     ></b-alert>
+   </div>
     <Command
       :player1="true"
       :turn="isPlayer1"
@@ -41,6 +43,7 @@
         :disabledEnd="disabledEnd"
         style="clear: both; margin-top: 480px;"
       />
+       
     </div>
   </div>
 </template>
@@ -696,6 +699,16 @@ export default class Game extends Vue {
   text-align: center;
   color: #2c3e50;
   margin-top: 20px;
-  margin-left: 20px;
+  margin-left: 380px;
 }
+#game1 {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 20px;
+  margin-left: -380px;
+}
+
 </style>
