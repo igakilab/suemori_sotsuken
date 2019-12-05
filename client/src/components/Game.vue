@@ -409,8 +409,12 @@ export default class Game extends Vue {
         this.$bvModal.show("resultModal");
         break;
       }
-      // 一秒前?に動かせなくしないとコンフリクトが発生するので要検討
-      this.setDisabledMove();
+      // 一秒前?に動かせなくしないとコンフリクトが発生する
+      if (this.second % 6 === 5) {
+        this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown = this.disabledBomb = this.disabledRedo = true;
+      } else {
+        this.setDisabledMove();
+      }
     }
   }
 
