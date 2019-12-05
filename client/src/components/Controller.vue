@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="position:relative; bottom: 120px; left: 120px;">
     <table style="table-layout: fixed;">
       <tr>
         <td></td>

@@ -4,24 +4,24 @@
       <font-awesome-icon
         v-if="m === MOVE.UP"
         icon="arrow-alt-circle-up"
-        size="4x"
+        size="5x"
       />
       <font-awesome-icon
         v-else-if="m === MOVE.LEFT"
         icon="arrow-alt-circle-left"
-        size="4x"
+        size="5x"
       />
       <font-awesome-icon
         v-else-if="m === MOVE.RIGHT"
         icon="arrow-alt-circle-right"
-        size="4x"
+        size="5x"
       />
       <font-awesome-icon
         v-else-if="m === MOVE.DOWN"
         icon="arrow-alt-circle-down"
-        size="4x"
+        size="5x"
       />
-      <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="4x" />
+      <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="5x" />
     </div>
     <div
       id="player1button"
@@ -63,8 +63,8 @@ export default class Command extends Vue {
 <style scoped>
 .frame_stroke_rect {
   border: solid 1px #000;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   text-align: center;
   vertical-align: middle;
 }
