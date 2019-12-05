@@ -1,5 +1,24 @@
 <template>
   <div id="game">
+    <b-modal id="resultModal" @ok="redoRoom" ok-only
+      ><div v-if="judge === JUDGE.DRAW">DRAW!!</div>
+      <div
+        v-else-if="
+          (judge === JUDGE.P1_WIN && isPlayer1) ||
+            (judge === JUDGE.P2_WIN && !isPlayer1)
+        "
+      >
+        You are WIN!!
+      </div>
+      <div
+        v-else-if="
+          (judge === JUDGE.P2_WIN && isPlayer1) ||
+            (judge === JUDGE.P1_WIN && !isPlayer1)
+        "
+      >
+        You are Lose...
+      </div></b-modal
+    >
     <b-alert show variant="primary" v-if="!playing"
       >プレイヤーを待機しています…<b-spinner
         style="margin-left: 10px;"
@@ -79,6 +98,13 @@ export enum MOVE {
   REDO,
   END,
   NULL
+}
+
+enum JUDGE {
+  P1_WIN,
+  P2_WIN,
+  DRAW,
+  CONTINUE
 }
 
 export function fromCommand(commands: string[]): MOVE[] {
@@ -212,6 +238,11 @@ export default class Game extends Vue {
   private isPlayer1: boolean = true;
   private playing: boolean = false;
   private second: number = 0;
+  private judge: JUDGE = JUDGE.CONTINUE;
+
+  get JUDGE() {
+    return JUDGE;
+  }
 
   private async *makeRangeIterator(start = 0, end = Infinity, step = 1) {
     let n = 0;
@@ -220,6 +251,41 @@ export default class Game extends Vue {
       await sleep(1000);
       yield i;
     }
+  }
+
+  private async redoRoom() {
+    if (this.isPlayer1) {
+      this.room.child("end").set(true);
+    }
+
+    const result = (() => {
+      if (this.isPlayer1) {
+        if (this.judge === JUDGE.P1_WIN) {
+          return "WIN";
+        }
+        if (this.judge === JUDGE.P2_WIN) {
+          return "LOSE";
+        }
+      } else {
+        if (this.judge === JUDGE.P1_WIN) {
+          return "LOSE";
+        }
+        if (this.judge === JUDGE.P2_WIN) {
+          return "WIN";
+        }
+      }
+      if (this.judge === JUDGE.DRAW) {
+        return "DRAW";
+      }
+      return "EXCEPTION";
+    })();
+
+    const user = firebase.database().ref(UserModule.uid);
+    const value: number = Number(
+      (await user.child(result).once("value")).val()
+    );
+    user.child(result).set(value + 1);
+    this.$router.push("/room");
   }
 
   @Watch("player1command")
@@ -313,6 +379,33 @@ export default class Game extends Vue {
           .child("player2")
           .child("command")
           .set(toCommandString(this.player2command));
+      }
+
+      const player1 = this.board.some(row =>
+        row.some(
+          cell => cell === BOARD.PLAYER1 || cell === BOARD.BOMB_ON_PLAYER1
+        )
+      );
+      const player2 = this.board.some(row =>
+        row.some(
+          cell => cell === BOARD.PLAYER2 || cell === BOARD.BOMB_ON_PLAYER2
+        )
+      );
+
+      if (!player1 && !player2) {
+        this.judge = JUDGE.DRAW;
+        this.$bvModal.show("resultModal");
+        break;
+      }
+      if (!player2) {
+        this.judge = JUDGE.P1_WIN;
+        this.$bvModal.show("resultModal");
+        break;
+      }
+      if (!player1) {
+        this.judge = JUDGE.P2_WIN;
+        this.$bvModal.show("resultModal");
+        break;
       }
       // 一秒前?に動かせなくしないとコンフリクトが発生するので要検討
       this.setDisabledMove();
@@ -679,11 +772,6 @@ export default class Game extends Vue {
 
   get refs(): any {
     return this.$refs;
-  }
-
-  private async judge() {
-    await this.refs.ref_board.explosion();
-    return false;
   }
 }
 </script>

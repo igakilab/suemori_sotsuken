@@ -237,7 +237,10 @@ export default class Room extends Vue {
         this.rooms = Object.values(rooms)
           .filter(
             room =>
-              !room.playing && !room.end && room.player1.uid !== UserModule.uid
+              !room.playing &&
+              !room.end &&
+              room.player1 &&
+              room.player1.uid !== UserModule.uid
           )
           .map(room => {
             return {
