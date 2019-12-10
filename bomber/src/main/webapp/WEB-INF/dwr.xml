@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dwr PUBLIC
+    "-//GetAhead Limited//DTD Direct Web Remoting 3.0//EN"
+    "http://getahead.org/dwr//dwr30.dtd">
+<dwr>
+  <allow>
+    <create creator="new" javascript="MultiplePrinter">
+      <param name="class" value="jp.igakilab.dwr.multiple.MultiplePrinter"/>
+    </create>
+    <convert converter="bean" match="jp.igakilab.dwr.multiple.MultipleForm" />
+    <convert converter="exception" match="java.lang.Exception" />
+    <create creator="new" javascript="ProductPrinter">
+      <param name="class" value="jp.igakilab.dwr.mybatis.ProductPrinter"/>
+    </create>
+    <convert converter="bean" match="jp.igakilab.dwr.mybatis.*" />
+    <create creator="new" javascript="Command">
+      <param name="class" value="jp.igakilab.dwr.bomber.Command"/>
+    </create>
+    <create creator="new" javascript="Logcheck">
+      <param name="class" value="jp.igakilab.dwr.bomber.Logcheck"/>
+    </create>
+     <create creator="new" javascript="User1com">
+      <param name="class" value="jp.igakilab.dwr.bomber.User1com"/>
+    </create>
+     <create creator="new" javascript="User2com">
+      <param name="class" value="jp.igakilab.dwr.bomber.User2com"/>
+    </create>
+    <create creator="new" javascript="Updatecom2">
+      <param name="class" value="jp.igakilab.dwr.bomber.Updatecom2"/>
+      </create>
+       <create creator="new" javascript="Getcom2">
+      <param name="class" value="jp.igakilab.dwr.bomber.Getcom2"/>
+      </create>
+       <create creator="new" javascript="Loc1">
+      <param name="class" value="jp.igakilab.dwr.bomber.Loc1"/>
+      </create>
+       <create creator="new" javascript="Loc2">
+      <param name="class" value="jp.igakilab.dwr.bomber.Loc2"/>
+      </create>
+    <convert converter="bean" match="jp.igakilab.dwr.bomber.*" />
+  </allow>
+</dwr>

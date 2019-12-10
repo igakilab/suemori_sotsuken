@@ -1,0 +1,77 @@
+{
+  // IntelliSense を使用して利用可能な属性を学べます。
+  // 既存の属性の説明をホバーして表示します。
+  // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug (Launch) - Current File",
+      "request": "launch",
+      "mainClass": "${file}"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Command<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Command",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-User1com<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.User1com",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-User2com<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.User2com",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Logcheck<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Logcheck",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Updatecom2<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Updatecom2",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Getcom2<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Getcom2",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Loc1<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Loc1",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-Loc2<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.bomber.Loc2",
+      "projectName": "bomber"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-ProductPrinter<bomber>",
+      "request": "launch",
+      "mainClass": "jp.igakilab.dwr.mybatis.ProductPrinter",
+      "projectName": "bomber"
+    }
+  ]
+}

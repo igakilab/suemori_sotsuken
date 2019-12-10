@@ -1,0 +1,4 @@
+bomber=# create table sampuser1(com1 varchar(80), com2 varchar(80), com3 varchar(80), com4 varchar(80), com5 varchar(80));
+CREATE TABLE   
+bomber=# create table sampuser2(com6 varchar(80), com7 varchar(80), com8 varchar(80), com9 varchar(80), com10 varchar(80));
+CREATE TABLE         

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!------この文書型宣言は忘れずに書く------>
+<html>
+
+<head>
+  <title>ログイン</title>
+  <meta http-equiv="content-language" content="ja">
+  <meta charset="UTF-8">
+  <script type="text/javascript" src="dwr/engine.js"></script>
+  <script type="text/javascript" src="dwr/util.js"></script>
+  <script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="js/jquery.serialize.js"></script>
+  <script src="js/jquery.cookie.min.js"></script>
+  <script type="text/javascript" src="dwr/interface/Logcheck.js"></script>
+</head>
+
+<body>
+  <form name="login">
+    IDとパスワードを入力してください<br>
+    <p>　　　　ID <input type="text" name="name" value=""><br></p>
+    <p>パスワード <input type="text" name="passward" value="">
+      <input type="button" value="ログイン" onclick="Log()"><br></p>
+  </form>
+
+  <script>
+    function Log() {
+      var str1 = document.login.name.value;
+      var str2 = document.login.passward.value;
+
+      Logcheck.execute(str1, str2, {
+        callback: function (data) {
+          if (data == 'OK') {
+            OK();
+          } else {
+            alert("IDもしくはパスワードが間違っています");
+          }
+        }
+      });
+    }
+    function OK() {
+      var name = document.login.name.value;
+      var pass = document.login.passward.value;
+      document.cookie = 'name=' + name;
+      document.cookie = 'pass=' + pass;
+
+      location.href = "samploc.html";
+    }
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-language" content="ja">
+  <meta charset="UTF-8">
+  <canvas id="canvas"></canvas>
+  <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+  <script type="text/javascript" src="dwr/engine.js"></script>
+  <script type="text/javascript" src="dwr/util.js"></script>
+  <script type="text/javascript" src="js/jquery-3.4.1.slim.min.js"></script>
+  <script type="text/javascript" src="js/jquery.serialize.js"></script>
+  <script src="js/jquery.cookie.min.js"></script>
+  <script type="text/javascript" src="dwr/interface/User1com.js"></script>
+  <script type="text/javascript" src="dwr/interface/User2com.js"></script>
+  <script type="text/javascript" src="dwr/interface/Updatecom2.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-database.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <title>BomberMan</title>
+</head>
+
+<body>
+  <div>
+    <table style="margin-top: 10px;">
+      <tbody>
+        <tr>
+          <td></td>
+          <td>
+            <button id="arrowUp" class="btn-real-dent" title="上へ進む" onclick="insertup()">
+              <i class="fas fa-arrow-alt-circle-up fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="bomb" class="btn-real-dent" title="爆弾を設置する" onclick="insertbomb()">
+              <i class="fas fa-bomb fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button id="arrowLeft" class="btn-real-dent" title="左へ進む" onclick="insertleft()">
+              <i class="fas fa-arrow-alt-circle-left fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td style="text-align:center;">
+            <button id="selectCheck" class="btn-real-dent" title="行動を終了する" onclick="insertCommand()">
+              <i class="fas fa-check-square fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="arrowRight" class="btn-real-dent" title="右へ進む" onclick="insertright()">
+              <i class="fas fa-arrow-alt-circle-right fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <button id="arrowDown" class="btn-real-dent" title="下へ進む" onclick="insertdown()">
+              <i class="fas fa-arrow-alt-circle-down fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+          <td>
+            <button id="redo" class="btn-real-dent" title="一つ前に戻る" onclick="removecom()">
+              <i class="fas fa-redo fa-3x" style="cursor: pointer;"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <form id="pprinter_form">
+      <input value="return" type="button" onclick="update()" />
+    </form>
+  </p>
+
+</body>
+
+<script type="text/javascript">
+  const firebaseConfig = {
+    apiKey: "AIzaSyDX5Eggo0Hjqq1snz-gTS8mlzbnOcCw1bc",
+    authDomain: "bomber-3f3fd.firebaseapp.com",
+    databaseURL: "https://bomber-3f3fd.firebaseio.com",
+    projectId: "bomber-3f3fd",
+    storageBucket: "bomber-3f3fd.appspot.com",
+    messagingSenderId: "834527661420",
+    appId: "1:834527661420:web:2b3b5a5059141eb6c6b749",
+    measurementId: "G-KJK9C4Z8W0"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  const database = firebase.database();
+
+  var canvas = document.getElementById('canvas');
+  canvas.width = 1200;		//canvasの横幅（よこはば）
+  canvas.height = 500;	//canvasの縦幅（たてはば）
+
+  //コンテキストを取得（しゅとく）
+  var ctx = canvas.getContext('2d');
+  var bom = new Object();
+  bom.img = new Image();
+  bom.img.src = 'img/bom.png'
+  var up = new Object();
+  var down = new Object();
+  var left = new Object();
+  var right = new Object();
+  upimg = new Image();
+  down.img = new Image();
+  left.img = new Image();
+  right.img = new Image();
+  upimg.src = 'img/up.png';
+  down.img.src = 'img/down.png';
+  left.img.src = 'img/left.png';
+  right.img.src = 'img/right.png';
+
+  var cnt = 0;
+  var cntmax = 5;
+
+  //コマンド確認枠右
+  ctx.beginPath();
+  ctx.moveTo(800, 0);
+  ctx.lineTo(800, 320);
+  ctx.stroke();
+  //コマンド確認枠右内側
+  for (var x = 0; x < 6; x++) {
+    ctx.beginPath();
+    ctx.moveTo(736, 0 + x * 64);
+    ctx.lineTo(800, 0 + x * 64);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(736, 0);
+  ctx.lineTo(736, 320);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(32, 0);
+  ctx.lineTo(32, 320);
+  ctx.stroke();
+  //コマンド確認枠左
+  ctx.beginPath();
+  ctx.moveTo(96, 0);
+  ctx.lineTo(96, 320);
+  ctx.stroke();
+  //コマンド確認枠左内側
+  for (var x = 0; x < 6; x++) {
+    ctx.beginPath();
+    ctx.moveTo(32, 0 + x * 64);
+    ctx.lineTo(96, 0 + x * 64);
+    ctx.stroke();
+  }
+
+
+  function insertCommand() {
+    cnt = 0;
+  }
+
+
+  var res1x = 40;
+  var res2x = 744;
+
+  var user = $.cookie('name');
+  let room5 = "com1";
+  let room6 = "com2";
+  let up1 = upimg;
+  let x1 = 0;
+  let x2 = 0;
+  function insertup() {
+    if (cnt < cntmax) {
+
+
+      var resy = cnt * 64 + 8;
+      if (user == "user1") {
+        ctx.drawImage(upimg, res1x, resy);
+        console.log("insert_up1実行完了");
+        cnt++;
+        x1 = 0;
+        database.ref(room5).set({
+          x1
+        });
+      }
+      if (user == "user2") {
+        ctx.drawImage(upimg, res2x, resy);
+        console.log("insert_up2実行完了");
+        cnt++;
+        database.ref(room5).set({
+          upimg
+        });
+      }
+    }
+
+    console.log(Array)
+  }
+
+
+  function insertright() {
+    if (cnt < cntmax) {
+      var resy = cnt * 64 + 8;
+
+      if (user == "user1") {
+        ctx.drawImage(right.img, res1x, resy);
+        console.log("insert_right1実行完了")
+        cnt++;
+        x1 = 1;
+        database.ref(room5).set({
+          x1
+        });
+      }
+      if (user == "user2") {
+        ctx.drawImage(right.img, res2x, resy);
+        console.log("insert_right2実行完了")
+        cnt++;
+      }
+      console.log(Array)
+    }
+  }
+  function insertleft() {
+    if (cnt < cntmax) {
+      var resy = cnt * 64 + 8;
+
+      if (user == "user1") {
+        ctx.drawImage(left.img, res1x, resy);
+        console.log("insert_left1実行完了")
+        cnt++;
+        x1 = 2;
+        database.ref(room5).set({
+          x1
+        });
+      }
+      if (user == "user2") {
+        ctx.drawImage(left.img, res2x, resy);
+        console.log("insert_left2実行完了")
+        cnt++;
+      }
+      console.log(Array)
+    }
+  }
+  function insertdown() {
+    if (cnt < cntmax) {
+      var resy = cnt * 64 + 8;
+
+      if (user == "user1") {
+        ctx.drawImage(down.img, res1x, resy);
+
+        console.log("insert_down1実行完了")
+        cnt++;
+        x1 = 3;
+        database.ref(room5).set({
+          x1
+        });
+      }
+      if (user == "user2") {
+        ctx.drawImage(down.img, res2x, resy);
+
+        console.log("insert_down2実行完了")
+        cnt++;
+      }
+      console.log(Array)
+    }
+  }
+  function insertbomb() {
+    if (cnt < cntmax) {
+      var resy = cnt * 64 + 8;
+
+      if (user == "user1") {
+        ctx.drawImage(bom.img, res1x, resy);
+        console.log("insert_bom1実行完了")
+        cnt++;
+        x1 = 4;
+        database.ref(room5).set({
+          x1
+        });
+      }
+      if (user == "user2") {
+        ctx.drawImage(bom.img, res2x, resy);
+        console.log("insert_bom2実行完了")
+        cnt++;
+      }
+      console.log(Array)
+    }
+  }
+
+  function removecom() {
+    if (cnt > 0 && cnt < 6) {
+      Array.splice(cnt - 1, 1);
+      console.log(Array)
+      cnt--;
+    }
+  }
+
+  database.ref(room5).on("value", function (data) {
+    if (cnt < cntmax) {
+
+      const v3 = data.val();
+      if (cnt == 0) {
+        var resy = 8;
+        if (v3.x1 == 0) {
+          ctx.drawImage(upimg, res1x, resy);
+        }
+        if (v3.x1 == 1) {
+          ctx.drawImage(right.img, res1x, resy);
+        }
+        if (v3.x1 == 2) {
+          ctx.drawImage(left.img, res1x, resy);
+        }
+        if (v3.x1 == 3) {
+          ctx.drawImage(down.img, res1x, resy);
+        }
+        if (v3.x1 == 4) {
+          ctx.drawImage(bom.img, res1x, resy);
+        }
+      }
+      if (cnt == 1) {
+        var resy = 72;
+        if (v3.x1 == 0) {
+          ctx.drawImage(upimg, res1x, resy);
+        }
+        if (v3.x1 == 1) {
+          ctx.drawImage(right.img, res1x, resy);
+        }
+        if (v3.x1 == 2) {
+          ctx.drawImage(left.img, res1x, resy);
+        }
+        if (v3.x1 == 3) {
+          ctx.drawImage(down.img, res1x, resy);
+        }
+        if (v3.x1 == 4) {
+          ctx.drawImage(bom.img, res1x, resy);
+        }
+      }
+    }
+  })
+
+
+
+
+</script>
+
+</html>

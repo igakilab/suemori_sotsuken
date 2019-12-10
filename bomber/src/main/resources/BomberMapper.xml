@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="igakilab.mybatis.BomberMapper">
+  <select id="selectcom" resultType="jp.igakilab.dwr.bomber.Information">
+    select username, pointx, pointy, com1, com2, com3, com4, com5 from sample1;
+  </select>
+   <select id="selectcom1" resultType="jp.igakilab.dwr.bomber.Command1">
+    select  com1, com2, com3, com4, com5 from sampuser1;
+  </select>
+   <select id="selectcom2" resultType="jp.igakilab.dwr.bomber.Command2">
+    select  com6, com7, com8, com9, com10 from sampuser2;
+  </select>
+  <select id="selectuser" resultType="jp.igakilab.dwr.bomber.Userinfo">
+    select name, passward from samplelogin;
+  </select>
+  <select id="selectloc1" resultType="jp.igakilab.dwr.bomber.Loc1info">
+    select point1x, point1y from samploc1;
+  </select>
+  <select id="selectloc2" resultType="jp.igakilab.dwr.bomber.Loc2info">
+    select point2x, point2y from samploc2;
+  </select>
+   <insert id="insertloc1">
+    insert into samploc1 (point1x, point1y)
+    values (#{point1x}, #{point1y})
+  </insert>
+  <insert id="insertloc2">
+    insert into samploc2 (point2x, point2y)
+    values (#{point2x}, #{point2y})
+  </insert>
+  <insert id="insertcom">
+    insert into sample1 (username, pointx, pointy, com1, com2, com3, com4, com5)
+    values (#{username}, #{pointx}, #{pointy}, #{com1}, #{com2}, #{com3}, #{com4}, #{com5})
+  </insert>
+   <insert id="insertcom1">
+    insert into sampuser1 (com1, com2, com3, com4, com5)
+    values (#{com1}, #{com2}, #{com3}, #{com4}, #{com5})
+  </insert>
+  <insert id="insertcom2">
+    insert into sampuser2 (com6, com7, com8, com9, com10)
+    values (#{com6}, #{com7}, #{com8}, #{com9}, #{com10})
+  </insert>
+  <update id="updateCommand2" parameterType="jp.igakilab.dwr.bomber.Command2">
+    update sampuser2
+    set com6 = #{com6},
+        com7 = #{com7},
+        com8 = #{com8},
+        com9 = #{com9},
+        com10 = #{com10}
+  </update>
+</mapper>
