@@ -8,38 +8,30 @@
           style="border:1px dotted #333; width: 50px; height: 50px; text-align: center; vertical-align: middle;"
         >
           <div
-            v-if="cell === BOARD.WALL"
+            v-if="cell.content === BOARD.WALL"
             style="width: 100%; height: 100%; background: black;"
           ></div>
-          <div v-if="cell === BOARD.BOMB_3" style="line-height: 0;">
+          <div v-if="cell.content === BOARD.BOMB" style="line-height: 0;">
             <font-awesome-icon icon="bomb" size="2x" />
             <span
               style="font-weight: bold; color: white; position: absolute; margin-left: -23px; margin-top: 20px;"
-              >3</span
+              >{{ cell.rest }}</span
             >
           </div>
-          <div v-if="cell === BOARD.BOMB_2" style="line-height: 0;">
-            <font-awesome-icon icon="bomb" size="2x" />
-            <span
-              style="font-weight: bold; color: white; position: absolute; margin-left: -23px; margin-top: 20px;"
-              >2</span
-            >
-          </div>
-          <div v-if="cell === BOARD.BOMB_1" style="line-height: 0;">
-            <font-awesome-icon icon="bomb" size="2x" />
-            <span
-              style="font-weight: bold; color: white; position: absolute; margin-left: -23px; margin-top: 20px;"
-              >1</span
-            >
-          </div>
-          <div v-else-if="cell === BOARD.PLAYER1" style="line-height: 0;">
+          <div
+            v-else-if="cell.content === BOARD.PLAYER1"
+            style="line-height: 0;"
+          >
             <font-awesome-icon icon="male" size="2x" style="color: blue;" />
           </div>
-          <div v-else-if="cell === BOARD.PLAYER2" style="line-height: 0;">
+          <div
+            v-else-if="cell.content === BOARD.PLAYER2"
+            style="line-height: 0;"
+          >
             <font-awesome-icon icon="male" size="2x" style="color: red;" />
           </div>
           <div
-            v-else-if="cell === BOARD.BOMB_ON_PLAYER1"
+            v-else-if="cell.content === BOARD.BOMB_ON_PLAYER1"
             style="line-height: 0;"
           >
             <font-awesome-icon icon="male" size="2x" style="color: blue;" />
@@ -50,7 +42,7 @@
             />
           </div>
           <div
-            v-else-if="cell === BOARD.BOMB_ON_PLAYER2"
+            v-else-if="cell.content === BOARD.BOMB_ON_PLAYER2"
             style="line-height: 0;"
           >
             <font-awesome-icon icon="male" size="2x" style="color: red;" />
@@ -60,7 +52,7 @@
               style="position: absolute; margin-left: -20px; z-index: -1;"
             />
           </div>
-          <div v-else-if="cell === BOARD.EXPLOSION">
+          <div v-else-if="cell.content === BOARD.EXPLOSION">
             <svg
               class="likeButton"
               width="32px"
@@ -87,7 +79,7 @@
             </svg>
           </div>
           <div
-            v-else-if="cell === BOARD.BLAST"
+            v-else-if="cell.content === BOARD.BLAST"
             style="width: 100%; height: 100%;"
             class="blinking"
           ></div>
@@ -105,7 +97,7 @@ import { faResolving } from "@fortawesome/free-brands-svg-icons";
 @Component
 export default class Board extends Vue {
   @Prop()
-  private board!: number[][];
+  private board!: { rest: number; content: BOARD }[][];
 
   private clicked: boolean = false;
 
