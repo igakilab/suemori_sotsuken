@@ -27,7 +27,7 @@
       ></b-spinner
     ></b-alert>
     <b-alert v-else show variant="success"
-      >ゲームスタート！ 次の動作まで残り{{ 5 - (second % 6) }}秒<b-spinner
+      >ゲームスタート！ 次の動作まで残り{{ 5 - (elapsedTime % 6) }}秒<b-spinner
         variant="success"
         label="Spinning"
         style="margin-left: 15px;"
@@ -173,7 +173,7 @@ export default class Game extends Vue {
   private room: firebase.database.Reference = firebase.database().ref();
   private isPlayer1: boolean = true;
   private playing: boolean = false;
-  private second: number = 0;
+  private elapsedTime: number = 0;
   private judge: JUDGE = JUDGE.CONTINUE;
 
   get JUDGE() {
@@ -181,9 +181,8 @@ export default class Game extends Vue {
   }
 
   private async *makeRangeIterator(start = 0, end = Infinity, step = 1) {
-    let n = 0;
     for (let i = start; i < end; i += step) {
-      n += 1;
+      this.elapsedTime++;
       await sleep(1000);
       yield i;
     }
@@ -275,12 +274,6 @@ export default class Game extends Vue {
       this.room.child("board").on("value", data => {
         const board = data.val();
         this.board = data.val();
-        // this.board.forEach((row, i) =>
-        //   this.board[i].forEach((cell, j) => {
-        //     this.$set(this.board[i][j], "content", board[i][j].content);
-        //     this.$set(this.board[i][j], "rest", board[i][j].rest);
-        //   })
-        // );
         sleep(1000).then(() => this.clearBoard());
       });
       this.room
@@ -289,12 +282,19 @@ export default class Game extends Vue {
         .on("value", data => {
           this.player2command = fromCommand(data.val());
         });
+
+      this.room.child("elapsedTime").on("value", data => {
+        this.elapsedTime = Number(data.val());
+      });
     }
 
     // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
     for await (const value of this.makeRangeIterator()) {
-      this.second = value;
-      if (this.second > 0 && this.second % 6 === 0 && this.isPlayer1) {
+      if (
+        this.elapsedTime > 0 &&
+        this.elapsedTime % 6 === 0 &&
+        this.isPlayer1
+      ) {
         // なんか処理
         const bombPoint = [];
         this.board.forEach((row, i) =>
@@ -347,7 +347,7 @@ export default class Game extends Vue {
         break;
       }
       // 一秒前?に動かせなくしないとコンフリクトが発生する
-      if (this.second % 6 === 5) {
+      if (this.elapsedTime % 6 === 5) {
         this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown = this.disabledBomb = this.disabledRedo = true;
       } else {
         this.setDisabledMove();
@@ -358,15 +358,16 @@ export default class Game extends Vue {
   private clearBoard(explosionPoints?: { x: number; y: number }[]) {
     if (explosionPoints) {
       explosionPoints.forEach(point => {
-        this.$set(this.board[point.y][point.x], "content", BOARD.NONE);
-        this.$set(this.board[point.y][point.x], "rest", 0);
+        this.$set(this.board[point.y], point.x, {
+          content: BOARD.NONE,
+          rest: 0
+        });
       });
     } else {
       this.board.forEach((row, i) =>
         row.forEach((cell, j) => {
           if ([BOARD.BLAST, BOARD.EXPLOSION].includes(cell.content)) {
-            this.$set(this.board[i][j], "content", BOARD.NONE);
-            this.$set(this.board[i][j], "rest", 0);
+            this.$set(this.board[i], j, { content: BOARD.NONE, rest: 0 });
           }
         })
       );
@@ -384,13 +385,14 @@ export default class Game extends Vue {
             i > 0 &&
             !unbrastList.includes(this.board[i - 1][j - 1].content)
           ) {
-            this.$set(this.board[i - 1][j - 1], "content", BOARD.BLAST);
-            this.$set(this.board[i - 1][j - 1], "rest", 0);
+            this.$set(this.board[i - 1], j - 1, {
+              content: BOARD.BLAST,
+              rest: 0
+            });
             explosionPoints.push({ x: j - 1, y: i - 1 });
           }
           if (j > 0 && !unbrastList.includes(this.board[i][j - 1].content)) {
-            this.$set(this.board[i][j - 1], "content", BOARD.BLAST);
-            this.$set(this.board[i][j - 1], "rest", 0);
+            this.$set(this.board[i], j - 1, { content: BOARD.BLAST, rest: 0 });
             explosionPoints.push({ x: j - 1, y: i });
           }
           if (
@@ -398,21 +400,21 @@ export default class Game extends Vue {
             i < this.board[0].length - 1 &&
             !unbrastList.includes(this.board[i + 1][j - 1].content)
           ) {
-            this.$set(this.board[i + 1][j - 1], "content", BOARD.BLAST);
-            this.$set(this.board[i + 1][j - 1], "rest", 0);
+            this.$set(this.board[i + 1], j - 1, {
+              content: BOARD.BLAST,
+              rest: 0
+            });
             explosionPoints.push({ x: j - 1, y: i + 1 });
           }
           if (i > 0 && !unbrastList.includes(this.board[i - 1][j].content)) {
-            this.$set(this.board[i - 1][j], "content", BOARD.BLAST);
-            this.$set(this.board[i - 1][j], "rest", 0);
+            this.$set(this.board[i - 1], j, { content: BOARD.BLAST, rest: 0 });
             explosionPoints.push({ x: j, y: i - 1 });
           }
           if (
             i < this.board[0].length - 1 &&
             !unbrastList.includes(this.board[i + 1][j].content)
           ) {
-            this.$set(this.board[i + 1][j], "content", BOARD.BLAST);
-            this.$set(this.board[i + 1][j], "rest", 0);
+            this.$set(this.board[i + 1], j, { content: BOARD.BLAST, rest: 0 });
             explosionPoints.push({ x: j, y: i + 1 });
           }
           if (
@@ -420,16 +422,17 @@ export default class Game extends Vue {
             i > 0 &&
             !unbrastList.includes(this.board[i - 1][j + 1].content)
           ) {
-            this.$set(this.board[i - 1][j + 1], "content", BOARD.BLAST);
-            this.$set(this.board[i - 1][j + 1], "rest", 0);
+            this.$set(this.board[i - 1], j + 1, {
+              content: BOARD.BLAST,
+              rest: 0
+            });
             explosionPoints.push({ x: j + 1, y: i - 1 });
           }
           if (
             j < this.board.length - 1 &&
             !unbrastList.includes(this.board[i][j + 1].content)
           ) {
-            this.$set(this.board[i][j + 1], "content", BOARD.BLAST);
-            this.$set(this.board[i][j + 1], "rest", 0);
+            this.$set(this.board[i], j + 1, { content: BOARD.BLAST, rest: 0 });
             explosionPoints.push({ x: j + 1, y: i });
           }
           if (
@@ -437,12 +440,13 @@ export default class Game extends Vue {
             i < this.board[0].length - 1 &&
             !unbrastList.includes(this.board[i + 1][j + 1].content)
           ) {
-            this.$set(this.board[i + 1][j + 1], "content", BOARD.BLAST);
-            this.$set(this.board[i + 1][j + 1], "rest", 0);
+            this.$set(this.board[i + 1], j + 1, {
+              content: BOARD.BLAST,
+              rest: 0
+            });
             explosionPoints.push({ x: j + 1, y: i + 1 });
           }
-          this.$set(this.board[i][j], "content", BOARD.EXPLOSION);
-          this.$set(this.board[i][j], "rest", 0);
+          this.$set(this.board[i], j, { content: BOARD.EXPLOSION, rest: 0 });
           explosionPoints.push({ x: j, y: i });
         }
       });
