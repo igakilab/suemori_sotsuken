@@ -19,6 +19,15 @@
         You are Lose...
       </div></b-modal
     >
+    <b-modal id="waitTurn" hide-header hide-footer no-close-on-backdrop>
+      <template v-slot:modal-title>
+        Using <code>$bvModal</code> Methods
+      </template>
+      <div class="d-block text-center">
+        <h3>相手プレイヤーが行動中です</h3>
+        <b-spinner label="Spinning" style="margin-left: 15px;"></b-spinner>
+      </div>
+    </b-modal>
     <b-alert show variant="primary" v-if="!playing"
       >プレイヤーを待機しています…<b-spinner
         style="margin-left: 10px;"
@@ -27,7 +36,9 @@
       ></b-spinner
     ></b-alert>
     <b-alert v-else show variant="success"
-      >ゲームスタート！ 次の動作まで残り{{ 5 - (elapsedTime % 6) }}秒<b-spinner
+      >ゲームスタート！ 次の動作まで残り{{
+        10 - (elapsedTime % 11)
+      }}秒<b-spinner
         variant="success"
         label="Spinning"
         style="margin-left: 15px;"
@@ -39,6 +50,7 @@
         :turn="isPlayer1"
         :command="player1command"
         :bomb="player1bomb"
+        :unknownMode="elapsedTime > 10 && !player1turn"
         style="float: left;"
       />
       <Board :board="board" ref="ref_board" />
@@ -48,6 +60,7 @@
           :turn="!isPlayer1"
           :command="player2command"
           :bomb="player2bomb"
+          :unknownMode="elapsedTime > 10 && player1turn"
           style="float: left;"
         />
         <Controller
@@ -175,6 +188,7 @@ export default class Game extends Vue {
   private playing: boolean = false;
   private elapsedTime: number = 0;
   private judge: JUDGE = JUDGE.CONTINUE;
+  private player1turn: boolean = true;
 
   get JUDGE() {
     return JUDGE;
@@ -231,7 +245,7 @@ export default class Game extends Vue {
   }
 
   @Watch("player2command")
-  public player2commandChanged(v: any, o: any) {
+  public player2commandChanged() {
     const player = this.room.child("player2");
     player.child("bomb").set(this.player2bomb);
     player.child("command").set(toCommandString(this.player2command));
@@ -286,16 +300,29 @@ export default class Game extends Vue {
       this.room.child("elapsedTime").on("value", data => {
         this.elapsedTime = Number(data.val());
       });
+
+      this.room.child("player1turn").on("value", data => {
+        this.player1turn = !!data.val();
+        if (this.player1turn === this.isPlayer1) {
+          this.$bvModal.hide("waitTurn");
+        } else {
+          this.$bvModal.show("waitTurn");
+        }
+        this.setDisabledMove();
+      });
+    }
+
+    if (this.isPlayer1) {
+      this.player1turn = true;
+    } else {
+      this.player1turn = false;
+      this.$bvModal.show("waitTurn");
     }
 
     // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
     for await (const value of this.makeRangeIterator()) {
-      if (
-        this.elapsedTime > 0 &&
-        this.elapsedTime % 6 === 0 &&
-        this.isPlayer1
-      ) {
-        // なんか処理
+      if (this.elapsedTime % 11 === 10 && this.isPlayer1) {
+        // 爆弾カウントダウン
         const bombPoint = [];
         this.board.forEach((row, i) =>
           row.forEach((cell, j) => {
@@ -306,53 +333,67 @@ export default class Game extends Vue {
             }
           })
         );
-        this.move();
+        // 移動処理
+        if (this.elapsedTime > 10) {
+          this.move(!this.player1turn);
+        }
+        // 爆発処理
         const explosionPoints = this.explosion();
+        // 盤面データ送信
         this.room.child("board").set(this.board);
+        // 盤面クリア
         sleep(1000).then(() => this.clearBoard(explosionPoints));
-        this.room
-          .child("player2")
-          .child("command")
-          .set(toCommandString(this.player2command));
-      }
-
-      const player1 = this.board.some(row =>
-        row.some(
-          cell =>
-            cell.content === BOARD.PLAYER1 ||
-            cell.content === BOARD.BOMB_ON_PLAYER1
-        )
-      );
-      const player2 = this.board.some(row =>
-        row.some(
-          cell =>
-            cell.content === BOARD.PLAYER2 ||
-            cell.content === BOARD.BOMB_ON_PLAYER2
-        )
-      );
-
-      if (!player1 && !player2) {
-        this.judge = JUDGE.DRAW;
-        this.$bvModal.show("resultModal");
-        break;
-      }
-      if (!player2) {
-        this.judge = JUDGE.P1_WIN;
-        this.$bvModal.show("resultModal");
-        break;
-      }
-      if (!player1) {
-        this.judge = JUDGE.P2_WIN;
-        this.$bvModal.show("resultModal");
-        break;
-      }
-      // 一秒前?に動かせなくしないとコンフリクトが発生する
-      if (this.elapsedTime % 6 === 5) {
-        this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown = this.disabledBomb = this.disabledRedo = true;
-      } else {
+        // 動かせなくする
         this.setDisabledMove();
+        if (this.player1turn) {
+          this.$bvModal.show("waitTurn");
+        } else {
+          this.$bvModal.hide("waitTurn");
+        }
+        // ターン変更
+        this.player1turn = !this.player1turn;
+        this.room.child("player1turn").set(this.player1turn);
+      }
+      // ゲーム終了判定(後で変える)
+      if (this.gameJudge()) {
+        this.$bvModal.hide("waitTurn");
+        break;
       }
     }
+  }
+
+  private gameJudge() {
+    const player1 = this.board.some(row =>
+      row.some(
+        cell =>
+          cell.content === BOARD.PLAYER1 ||
+          cell.content === BOARD.BOMB_ON_PLAYER1
+      )
+    );
+    const player2 = this.board.some(row =>
+      row.some(
+        cell =>
+          cell.content === BOARD.PLAYER2 ||
+          cell.content === BOARD.BOMB_ON_PLAYER2
+      )
+    );
+
+    if (!player1 && !player2) {
+      this.judge = JUDGE.DRAW;
+      this.$bvModal.show("resultModal");
+      return true;
+    }
+    if (!player2) {
+      this.judge = JUDGE.P1_WIN;
+      this.$bvModal.show("resultModal");
+      return true;
+    }
+    if (!player1) {
+      this.judge = JUDGE.P2_WIN;
+      this.$bvModal.show("resultModal");
+      return true;
+    }
+    return false;
   }
 
   private clearBoard(explosionPoints?: { x: number; y: number }[]) {
@@ -648,7 +689,7 @@ export default class Game extends Vue {
     return c[Math.floor(Math.random() * c.length)];
   }
 
-  private move() {
+  private async move(isPlayer1: boolean) {
     const unMovingList = [
       BOARD.PLAYER1,
       BOARD.PLAYER2,
@@ -657,21 +698,17 @@ export default class Game extends Vue {
       BOARD.BOMB_ON_PLAYER1,
       BOARD.BOMB_ON_PLAYER2
     ];
-    for (const isPlayer1 of [true, false]) {
+    const commands = isPlayer1 ? this.player1command : this.player2command;
+    const boardPlayer = isPlayer1 ? BOARD.PLAYER1 : BOARD.PLAYER2;
+    const boardBombOnPlayer = isPlayer1
+      ? BOARD.BOMB_ON_PLAYER1
+      : BOARD.BOMB_ON_PLAYER2;
+
+    commands.forEach(command => {
       const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
         isPlayer1
       );
-      const command = isPlayer1 ? this.player1command : this.player2command;
-      const boardPlayer = isPlayer1 ? BOARD.PLAYER1 : BOARD.PLAYER2;
-      const boardBombOnPlayer = isPlayer1
-        ? BOARD.BOMB_ON_PLAYER1
-        : BOARD.BOMB_ON_PLAYER2;
-
-      const action = (() => {
-        const c = command.shift() || MOVE.NULL;
-        return c === MOVE.NULL ? this.randomCommand() : c;
-      })();
-      command.push(MOVE.NULL);
+      const action = command ? command : this.randomCommand();
       if (
         [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
       ) {
@@ -746,6 +783,15 @@ export default class Game extends Vue {
           }
         }
       }
+    });
+    if (isPlayer1) {
+      this.player1command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+      // 強制(二度実行)
+      this.player1commandChanged();
+    } else {
+      this.player2command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+      // 強制(二度実行)
+      this.player2commandChanged();
     }
   }
 

@@ -22,6 +22,11 @@
         size="5x"
       />
       <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="5x" />
+      <font-awesome-icon
+        v-else-if="m === MOVE.NULL && unknownMode"
+        icon="question-circle"
+        size="5x"
+      />
     </div>
     <div
       id="player1button"
@@ -53,6 +58,7 @@ export default class Command extends Vue {
   @Prop({ default: 5 }) private bomb!: number;
   @Prop({ default: true }) private turn!: boolean;
   @Prop() command!: symbol[];
+  @Prop({ default: false }) private unknownMode!: boolean;
 
   get MOVE() {
     return MOVE;
