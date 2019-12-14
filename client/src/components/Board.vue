@@ -1,5 +1,5 @@
 <template>
-  <div style="float: left; margin-right: 20px;">
+  <div style="float: left; margin-right: 20px; margin-left: 20px">
     <table style="border-collapse: collapse; border:1px solid #333;">
       <tr v-for="(row, index) in board" :key="`row${index}`">
         <td

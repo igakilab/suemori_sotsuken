@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-right: 20px;">
+<div>
     <div v-for="(m, index) in command" :key="index" class="frame_stroke_rect">
       <font-awesome-icon
         v-if="m === MOVE.UP"
@@ -27,6 +27,11 @@
         icon="question-circle"
         size="5x"
       />
+      <font-awesome-icon
+        v-else-if="m === MOVE.FUNC"
+        icon="arrows-alt"
+        size="5x"
+      />
     </div>
     <div
       id="player1button"
@@ -45,7 +50,7 @@
       <div style="float: left; margin-top: 8px;">x</div>
       <div class="bomb">{{ bomb }}</div>
     </div>
-  </div>
+     </div>
 </template>
 
 <script lang="ts">

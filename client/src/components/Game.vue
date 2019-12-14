@@ -45,6 +45,14 @@
       ></b-spinner
     ></b-alert>
     <div id="game1">
+       <Function
+        :player1="true"
+        :turn="isPlayer1"
+        :command="player1Funccommand"
+        :bomb="player1bomb"
+        :unknownMode="elapsedTime > 10 && !player1turn"
+        style="float: left;"
+      />
       <Command
         :player1="true"
         :turn="isPlayer1"
@@ -63,6 +71,14 @@
           :unknownMode="elapsedTime > 10 && player1turn"
           style="float: left;"
         />
+        <Function
+        :player1="true"
+        :turn="isPlayer1"
+        :command="player2Funccommand"
+        :bomb="player1bomb"
+        :unknownMode="elapsedTime > 10 && player1turn"
+         style="float: left;"
+      />
         <Controller
           @click="setCommand"
           :disabledUp="disabledUp"
@@ -72,7 +88,19 @@
           :disabledBomb="disabledBomb"
           :disabledRedo="disabledRedo"
           :disabledEnd="disabledEnd"
+          :disabledFunc="disabledFunc"
           style="clear: both; margin-top: 480px;"
+        />
+         <FuncCont
+          @click="setFuncCommand"
+          :disabledUp="disabledUp"
+          :disabledLeft="disabledLeft"
+          :disabledRight="disabledRight"
+          :disabledDown="disabledDown"
+          :disabledBomb="disabledBomb"
+          :disabledRedo="disabledRedo"
+          :disabledEnd="disabledEnd"
+          style="clear: both; float: left;"
         />
       </div>
     </div>
@@ -88,8 +116,12 @@ import Board from "@/components/Board.vue";
 import Controller from "@/components/Controller.vue";
 import UserModule from "@/store/user.ts";
 import undefined from "firebase/empty-import";
+import Function from "@/components/Function.vue";
+import FuncCont from "@/components/FuncCont.vue";
+
 
 export const COMMAND_SIZE: number = 5;
+export const FUNC_SIZE: number = 3;
 const sleep = (ms: number) => new Promise(f => setTimeout(f, ms));
 export enum BOARD {
   NONE,
@@ -110,7 +142,8 @@ export enum MOVE {
   DOWN,
   BOMB,
   REDO,
-  END
+  END,
+  FUNC
 }
 
 enum JUDGE {
@@ -133,6 +166,8 @@ export function fromCommand(commands: string[]): MOVE[] {
         return MOVE.DOWN;
       case "BOMB":
         return MOVE.BOMB;
+       case "FUNC":
+        return MOVE.FUNC;
       default:
         return MOVE.NULL;
     }
@@ -152,6 +187,8 @@ export function toCommandString(commands: MOVE[]) {
         return "DOWN";
       case MOVE.BOMB:
         return "BOMB";
+        case MOVE.FUNC:
+        return "FUNC";
       default:
         return "NULL";
     }
@@ -166,7 +203,9 @@ export function fromBoard(board: number[][]) {
   components: {
     Command,
     Board,
-    Controller
+    Controller,
+    Function,
+    FuncCont
   }
 })
 export default class Game extends Vue {
@@ -178,8 +217,11 @@ export default class Game extends Vue {
   private disabledBomb: boolean = true;
   private disabledRedo: boolean = true;
   private disabledEnd: boolean = true;
+  private disabledFunc: boolean = true;
   private player1command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private player2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+   private player1Funccommand: MOVE[] = new Array(FUNC_SIZE).fill(MOVE.NULL);
+     private player2Funccommand: MOVE[] = new Array(FUNC_SIZE).fill(MOVE.NULL);
   private player1bomb: number = 5;
   private player2bomb: number = 5;
   private log: MOVE[][] = [];
@@ -251,6 +293,20 @@ export default class Game extends Vue {
     player.child("command").set(toCommandString(this.player2command));
   }
 
+   @Watch("player1Funccommand")
+  public player1FunccommandChanged() {
+    const player = this.room.child("player1");
+    player.child("bomb").set(this.player1bomb);
+    player.child("funccommand").set(toCommandString(this.player1Funccommand));
+  }
+
+  @Watch("player2Funccommand")
+  public player2FunccommandChanged(v: any, o: any) {
+    const player = this.room.child("player2");
+    player.child("bomb").set(this.player2bomb);
+    player.child("funccommand").set(toCommandString(this.player2Funccommand));
+  }
+
   private async start() {
     if (!this.room) {
       alert("ルーム情報を失いました。ルーム選択画面に戻ります。");
@@ -284,6 +340,17 @@ export default class Game extends Vue {
         }
       });
 
+       this.room
+      .child(opponent)
+      .child("funccommand")
+      .on("value", data => {
+        if (!this.isPlayer1) {
+          this.player1Funccommand = fromCommand(data.val());
+        } else {
+          this.player2Funccommand = fromCommand(data.val());
+        }
+      });
+
     if (!this.isPlayer1) {
       this.room.child("board").on("value", data => {
         const board = data.val();
@@ -295,6 +362,13 @@ export default class Game extends Vue {
         .child("command")
         .on("value", data => {
           this.player2command = fromCommand(data.val());
+        });
+
+         this.room
+        .child("player2")
+        .child("funccommand")
+        .on("value", data => {
+          this.player2Funccommand = fromCommand(data.val());
         });
 
       this.room.child("elapsedTime").on("value", data => {
@@ -618,9 +692,22 @@ export default class Game extends Vue {
     this.disabledRedo = playerCommand.filter(c => c !== MOVE.NULL).length === 0;
   }
 
+  private setDisabledMove2() {
+    const playerCommand = this.isPlayer1
+      ? this.player1Funccommand
+      : this.player2Funccommand;
+    const playerBomb = this.isPlayer1 ? this.player1bomb : this.player2bomb;
+    this.disabledUp = this.disabledLeft = this.disabledRight = this.disabledDown =
+      playerCommand.filter(c => c !== MOVE.NULL).length === FUNC_SIZE;
+    this.disabledBomb =
+      playerBomb <= 0 ||
+      playerCommand.filter(c => c !== MOVE.NULL).length === FUNC_SIZE;
+    this.disabledRedo = playerCommand.filter(c => c !== MOVE.NULL).length === 0;
+  }
+
   private setCommand(action: MOVE) {
     if (
-      [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
+      [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB,MOVE.FUNC].includes(action)
     ) {
       if (this.isPlayer1) {
         if (
@@ -683,6 +770,73 @@ export default class Game extends Vue {
     }
     this.setDisabledMove();
   }
+
+   private setFuncCommand(action: MOVE) {
+ if (
+      [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
+    ) {
+      if (this.isPlayer1) {
+        if (
+          this.player1Funccommand.filter(c => c !== MOVE.NULL).length < FUNC_SIZE
+        ) {
+          this.$set(
+            this.player1Funccommand,
+            this.player1Funccommand.filter(c => c !== MOVE.NULL).length,
+            action
+          );
+         if (action === MOVE.BOMB) {
+            this.player1bomb--;
+          }
+        }
+      } else {
+        if (
+          this.player2Funccommand.filter(c => c !== MOVE.NULL).length < FUNC_SIZE
+        ) {
+          this.$set(
+            this.player2Funccommand,
+            this.player2Funccommand.filter(c => c !== MOVE.NULL).length,
+            action
+          );
+         if (action === MOVE.BOMB) {
+            this.player2bomb--;
+          }
+        }
+      }
+    
+     }
+    if (action === MOVE.REDO) {
+      if (this.isPlayer1) {
+        if (this.player1Funccommand.filter(c => c !== MOVE.NULL).length > 0) {
+          const preMove = this.player1Funccommand[
+            this.player1Funccommand.filter(c => c !== MOVE.NULL).length - 1
+          ];
+          this.$set(
+            this.player1Funccommand,
+            this.player1Funccommand.filter(c => c !== MOVE.NULL).length - 1,
+            MOVE.NULL
+          );
+          if (preMove === MOVE.BOMB) {
+            this.player1bomb++;
+          }
+        }
+      } else {
+        if (this.player2Funccommand.filter(c => c !== MOVE.NULL).length > 0) {
+          const preMove = this.player2Funccommand[
+            this.player2Funccommand.filter(c => c !== MOVE.NULL).length - 1
+          ];
+          this.$set(
+            this.player2Funccommand,
+            this.player2Funccommand.filter(c => c !== MOVE.NULL).length - 1,
+            MOVE.NULL
+          );
+          if (preMove === MOVE.BOMB) {
+            this.player2bomb++;
+          }
+        }
+      }
+    }
+    this.setDisabledMove2()
+   }
 
   private randomCommand() {
     const c = [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN];

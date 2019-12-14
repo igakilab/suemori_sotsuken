@@ -32,9 +32,8 @@
         </td>
       </tr>
       <tr>
-        <td> <b-button @click="onFuncClick" :disabled="disabledFunc"
-            ><font-awesome-icon icon="arrows-alt" size="2x"
-          /></b-button></td>
+        <td>
+        </td>
         <td>
           <b-button @click="onDownClick" :disabled="disabledDown"
             ><font-awesome-icon icon="arrow-down" size="2x"
@@ -55,7 +54,7 @@ import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
-export default class Controller extends Vue {
+export default class FuncCont extends Vue {
   @Prop() disabledUp!: boolean;
   @Prop() disabledLeft!: boolean;
   @Prop() disabledRight!: boolean;
@@ -63,7 +62,6 @@ export default class Controller extends Vue {
   @Prop() disabledRedo!: boolean;
   @Prop() disabledBomb!: boolean;
   @Prop() disabledEnd!: boolean;
-  @Prop() disabledFunc!: boolean;
   private onUpClick() {
     this.$emit("click", MOVE.UP);
   }
@@ -90,9 +88,6 @@ export default class Controller extends Vue {
 
   private onEndClick() {
     this.$emit("click", MOVE.END);
-  }
-   private onFuncClick() {
-    this.$emit("click", MOVE.FUNC);
   }
 }
 </script>
