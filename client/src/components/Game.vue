@@ -19,7 +19,7 @@
         You are Lose...
       </div></b-modal
     >
-    <b-modal id="waitTurn" hide-header hide-footer no-close-on-backdrop>
+    <!-- <b-modal id="waitTurn" hide-header hide-footer no-close-on-backdrop>
       <template v-slot:modal-title>
         Using <code>$bvModal</code> Methods
       </template>
@@ -27,7 +27,7 @@
         <h3>相手プレイヤーが行動中です</h3>
         <b-spinner label="Spinning" style="margin-left: 15px;"></b-spinner>
       </div>
-    </b-modal>
+    </b-modal> -->
     <b-alert show variant="primary" v-if="!playing"
       >プレイヤーを待機しています…<b-spinner
         style="margin-left: 10px;"
@@ -49,6 +49,7 @@
         :player1="true"
         :turn="isPlayer1"
         :command="player1command"
+        :preCommand="prePlayer1command"
         :bomb="player1bomb"
         :unknownMode="elapsedTime > 10 && !player1turn"
         style="float: left;"
@@ -59,6 +60,7 @@
           :player1="false"
           :turn="!isPlayer1"
           :command="player2command"
+          :preCommand="prePlayer2command"
           :bomb="player2bomb"
           :unknownMode="elapsedTime > 10 && player1turn"
           style="float: left;"
@@ -72,7 +74,7 @@
           :disabledBomb="disabledBomb"
           :disabledRedo="disabledRedo"
           :disabledEnd="disabledEnd"
-          style="clear: both; margin-top: 480px;"
+          style="clear: both; margin-top: 540px; margin-left: 50px;"
         />
       </div>
     </div>
@@ -179,7 +181,9 @@ export default class Game extends Vue {
   private disabledRedo: boolean = true;
   private disabledEnd: boolean = true;
   private player1command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private prePlayer1command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private player2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private prePlayer2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private player1bomb: number = 5;
   private player2bomb: number = 5;
   private log: MOVE[][] = [];
@@ -241,14 +245,20 @@ export default class Game extends Vue {
   public player1commandChanged() {
     const player = this.room.child("player1");
     player.child("bomb").set(this.player1bomb);
-    player.child("command").set(toCommandString(this.player1command));
+    player
+      .child("commands")
+      .child("now")
+      .set(toCommandString(this.player1command));
   }
 
   @Watch("player2command")
   public player2commandChanged() {
     const player = this.room.child("player2");
     player.child("bomb").set(this.player2bomb);
-    player.child("command").set(toCommandString(this.player2command));
+    player
+      .child("commands")
+      .child("now")
+      .set(toCommandString(this.player2command));
   }
 
   private async start() {
@@ -275,7 +285,20 @@ export default class Game extends Vue {
 
     this.room
       .child(opponent)
-      .child("command")
+      .child("commands")
+      .child("previous")
+      .on("value", data => {
+        if (!this.isPlayer1) {
+          this.prePlayer1command = fromCommand(data.val());
+        } else {
+          this.prePlayer2command = fromCommand(data.val());
+        }
+      });
+
+    this.room
+      .child(opponent)
+      .child("commands")
+      .child("now")
       .on("value", data => {
         if (!this.isPlayer1) {
           this.player1command = fromCommand(data.val());
@@ -300,28 +323,15 @@ export default class Game extends Vue {
       this.room.child("elapsedTime").on("value", data => {
         this.elapsedTime = Number(data.val());
       });
-
-      this.room.child("player1turn").on("value", data => {
-        this.player1turn = !!data.val();
-        if (this.player1turn === this.isPlayer1) {
-          this.$bvModal.hide("waitTurn");
-        } else {
-          this.$bvModal.show("waitTurn");
-        }
-        this.setDisabledMove();
-      });
-    }
-
-    if (this.isPlayer1) {
-      this.player1turn = true;
-    } else {
-      this.player1turn = false;
-      this.$bvModal.show("waitTurn");
     }
 
     // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
     for await (const value of this.makeRangeIterator()) {
-      if (this.elapsedTime % 11 === 10 && this.isPlayer1) {
+      if (
+        this.elapsedTime % 11 === 0 &&
+        this.elapsedTime > 0 &&
+        this.isPlayer1
+      ) {
         // 爆弾カウントダウン
         const bombPoint = [];
         this.board.forEach((row, i) =>
@@ -335,7 +345,12 @@ export default class Game extends Vue {
         );
         // 移動処理
         if (this.elapsedTime > 10) {
-          this.move(!this.player1turn);
+          this.move(true);
+          this.move(false);
+          this.prePlayer1command = this.player1command;
+          this.player1command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+          this.prePlayer2command = this.player2command;
+          this.player2command = Array(COMMAND_SIZE).fill(MOVE.NULL);
         }
         // 爆発処理
         const explosionPoints = this.explosion();
@@ -343,20 +358,13 @@ export default class Game extends Vue {
         this.room.child("board").set(this.board);
         // 盤面クリア
         sleep(1000).then(() => this.clearBoard(explosionPoints));
+      }
+      if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
         // 動かせなくする
         this.setDisabledMove();
-        if (this.player1turn) {
-          this.$bvModal.show("waitTurn");
-        } else {
-          this.$bvModal.hide("waitTurn");
-        }
-        // ターン変更
-        this.player1turn = !this.player1turn;
-        this.room.child("player1turn").set(this.player1turn);
       }
       // ゲーム終了判定(後で変える)
       if (this.gameJudge()) {
-        this.$bvModal.hide("waitTurn");
         break;
       }
     }
@@ -698,7 +706,9 @@ export default class Game extends Vue {
       BOARD.BOMB_ON_PLAYER1,
       BOARD.BOMB_ON_PLAYER2
     ];
-    const commands = isPlayer1 ? this.player1command : this.player2command;
+    const commands = isPlayer1
+      ? this.prePlayer1command
+      : this.prePlayer2command;
     const boardPlayer = isPlayer1 ? BOARD.PLAYER1 : BOARD.PLAYER2;
     const boardBombOnPlayer = isPlayer1
       ? BOARD.BOMB_ON_PLAYER1
@@ -784,15 +794,6 @@ export default class Game extends Vue {
         }
       }
     });
-    if (isPlayer1) {
-      this.player1command = Array(COMMAND_SIZE).fill(MOVE.NULL);
-      // 強制(二度実行)
-      this.player1commandChanged();
-    } else {
-      this.player2command = Array(COMMAND_SIZE).fill(MOVE.NULL);
-      // 強制(二度実行)
-      this.player2commandChanged();
-    }
   }
 
   get refs(): any {

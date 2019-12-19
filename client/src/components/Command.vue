@@ -1,32 +1,12 @@
 <template>
   <div style="margin-right: 20px;">
-    <div v-for="(m, index) in command" :key="index" class="frame_stroke_rect">
-      <font-awesome-icon
-        v-if="m === MOVE.UP"
-        icon="arrow-alt-circle-up"
-        size="5x"
-      />
-      <font-awesome-icon
-        v-else-if="m === MOVE.LEFT"
-        icon="arrow-alt-circle-left"
-        size="5x"
-      />
-      <font-awesome-icon
-        v-else-if="m === MOVE.RIGHT"
-        icon="arrow-alt-circle-right"
-        size="5x"
-      />
-      <font-awesome-icon
-        v-else-if="m === MOVE.DOWN"
-        icon="arrow-alt-circle-down"
-        size="5x"
-      />
-      <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="5x" />
-      <font-awesome-icon
-        v-else-if="m === MOVE.NULL && unknownMode"
-        icon="question-circle"
-        size="5x"
-      />
+    <div v-if="player1">
+      <Command2 :command="preCommand" style="float: left;"></Command2>
+      <Command2 :command="command" style="float: left;"></Command2>
+    </div>
+    <div v-else>
+      <Command2 :command="command" style="float: left;"></Command2>
+      <Command2 :command="preCommand" style="float: left;"></Command2>
     </div>
     <div
       id="player1button"
@@ -40,10 +20,14 @@
       <font-awesome-icon
         icon="bomb"
         size="2x"
-        style="cursor: pointer; position: relative; float:left;"
+        style="cursor: pointer; position: display: inline-block;"
       />
-      <div style="float: left; margin-top: 8px;">x</div>
-      <div class="bomb">{{ bomb }}</div>
+      <div
+        style="margin-top: 0px; display: inline-block; margin-left: 10px; margin-right: 10px;"
+      >
+        x
+      </div>
+      <div class="bomb" style="display: inline-block;">{{ bomb }}</div>
     </div>
   </div>
 </template>
@@ -51,13 +35,19 @@
 <script lang="ts">
 import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
+import Command2 from "@/components/Command2.vue";
 
-@Component
+@Component({
+  components: {
+    Command2
+  }
+})
 export default class Command extends Vue {
   @Prop({ default: true }) private player1!: boolean;
   @Prop({ default: 5 }) private bomb!: number;
   @Prop({ default: true }) private turn!: boolean;
   @Prop() command!: symbol[];
+  @Prop() preCommand!: symbol[];
   @Prop({ default: false }) private unknownMode!: boolean;
 
   get MOVE() {
