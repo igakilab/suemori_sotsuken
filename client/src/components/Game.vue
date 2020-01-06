@@ -243,22 +243,33 @@ export default class Game extends Vue {
 
   @Watch("player1command")
   public player1commandChanged() {
-    const player = this.room.child("player1");
-    player.child("bomb").set(this.player1bomb);
-    player
-      .child("commands")
-      .child("now")
-      .set(toCommandString(this.player1command));
+    if (this.isPlayer1) {
+      const player = this.room.child("player1");
+      player.child("bomb").set(this.player1bomb);
+      player
+        .child("commands")
+        .child("now")
+        .set(toCommandString(this.player1command));
+    }
   }
 
   @Watch("player2command")
   public player2commandChanged() {
-    const player = this.room.child("player2");
-    player.child("bomb").set(this.player2bomb);
-    player
-      .child("commands")
-      .child("now")
-      .set(toCommandString(this.player2command));
+    if (!this.isPlayer1) {
+      const player = this.room.child("player2");
+      player.child("bomb").set(this.player2bomb);
+      player
+        .child("commands")
+        .child("now")
+        .set(toCommandString(this.player2command));
+    }
+  }
+
+  @Watch("elapsedTime")
+  public elapsedTimeChanged() {
+    if (this.isPlayer1) {
+      this.room.child("elapsedTime").set(this.elapsedTime);
+    }
   }
 
   private async start() {
@@ -286,18 +297,6 @@ export default class Game extends Vue {
     this.room
       .child(opponent)
       .child("commands")
-      .child("previous")
-      .on("value", data => {
-        if (!this.isPlayer1) {
-          this.prePlayer1command = fromCommand(data.val());
-        } else {
-          this.prePlayer2command = fromCommand(data.val());
-        }
-      });
-
-    this.room
-      .child(opponent)
-      .child("commands")
       .child("now")
       .on("value", data => {
         if (!this.isPlayer1) {
@@ -307,66 +306,112 @@ export default class Game extends Vue {
         }
       });
 
-    if (!this.isPlayer1) {
+    // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
+    if (this.isPlayer1) {
+      for await (const value of this.makeRangeIterator()) {
+        if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+          // 爆弾カウントダウン
+          const bombPoint = [];
+          this.board.forEach((row, i) =>
+            row.forEach((cell, j) => {
+              switch (cell.content) {
+                case BOARD.BOMB:
+                  this.$set(
+                    this.board[i][j],
+                    "rest",
+                    this.board[i][j].rest - 1
+                  );
+                  bombPoint.push({ x: j, y: i });
+              }
+            })
+          );
+          // 移動処理
+          if (this.elapsedTime > 10) {
+            this.move(true);
+            this.move(false);
+            const c1 = toCommandString(this.player1command);
+            const c2 = toCommandString(this.player2command);
+            this.prePlayer1command = this.player1command;
+            this.player1command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+            this.prePlayer2command = this.player2command;
+            this.player2command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+            this.room
+              .child("player1")
+              .child("commands")
+              .child("previous")
+              .set(c1);
+            this.room
+              .child("player2")
+              .child("commands")
+              .child("previous")
+              .set(c2);
+            this.room
+              .child("player2")
+              .child("commands")
+              .child("now")
+              .set(toCommandString(this.player1command));
+            this.room
+              .child("player2")
+              .child("commands")
+              .child("now")
+              .set(toCommandString(this.player2command));
+          }
+          // 爆発処理
+          const explosionPoints = this.explosion();
+          // 盤面データ送信
+          this.room.child("board").set(this.board);
+          // 盤面クリア
+          sleep(1000).then(() => this.clearBoard(explosionPoints));
+          if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+            // 動かせなくする
+            this.setDisabledMove();
+          }
+          // ゲーム終了判定(後で変える)
+          if (this.gameJudge()) {
+            break;
+          }
+        }
+      }
+    } else {
       this.room.child("board").on("value", data => {
-        const board = data.val();
         this.board = data.val();
+        // ゲーム終了判定(後で変える)
+        this.gameJudge();
         sleep(1000).then(() => this.clearBoard());
       });
+
+      this.room
+        .child("player1")
+        .child("commands")
+        .child("previous")
+        .on("value", data => {
+          this.prePlayer1command = fromCommand(data.val());
+        });
+
       this.room
         .child("player2")
-        .child("command")
+        .child("commands")
+        .child("previous")
+        .on("value", data => {
+          this.prePlayer2command = fromCommand(data.val());
+        });
+
+      this.room
+        .child("player2")
+        .child("commands")
+        .child("now")
         .on("value", data => {
           this.player2command = fromCommand(data.val());
+          this.setDisabledMove();
         });
 
       this.room.child("elapsedTime").on("value", data => {
         this.elapsedTime = Number(data.val());
-      });
-    }
-
-    // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
-    for await (const value of this.makeRangeIterator()) {
-      if (
-        this.elapsedTime % 11 === 0 &&
-        this.elapsedTime > 0 &&
-        this.isPlayer1
-      ) {
-        // 爆弾カウントダウン
-        const bombPoint = [];
-        this.board.forEach((row, i) =>
-          row.forEach((cell, j) => {
-            switch (cell.content) {
-              case BOARD.BOMB:
-                this.$set(this.board[i][j], "rest", this.board[i][j].rest - 1);
-                bombPoint.push({ x: j, y: i });
-            }
-          })
-        );
-        // 移動処理
-        if (this.elapsedTime > 10) {
-          this.move(true);
-          this.move(false);
-          this.prePlayer1command = this.player1command;
-          this.player1command = Array(COMMAND_SIZE).fill(MOVE.NULL);
-          this.prePlayer2command = this.player2command;
-          this.player2command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+        if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+          // 動かせなくする
+          this.setDisabledMove();
         }
-        // 爆発処理
-        const explosionPoints = this.explosion();
-        // 盤面データ送信
-        this.room.child("board").set(this.board);
-        // 盤面クリア
-        sleep(1000).then(() => this.clearBoard(explosionPoints));
-      }
-      if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
-        // 動かせなくする
-        this.setDisabledMove();
-      }
-      // ゲーム終了判定(後で変える)
-      if (this.gameJudge()) {
-        break;
-      }
+      });
     }
   }
 

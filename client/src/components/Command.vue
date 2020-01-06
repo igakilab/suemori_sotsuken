@@ -1,12 +1,28 @@
 <template>
   <div style="margin-right: 20px;">
     <div v-if="player1">
-      <Command2 :command="preCommand" style="float: left;"></Command2>
-      <Command2 :command="command" style="float: left;"></Command2>
+      <Command2
+        :command="preCommand"
+        :unknwonMode="true"
+        style="float: left;"
+      ></Command2>
+      <Command2
+        :command="command"
+        :unknwonMode="true"
+        style="float: left;"
+      ></Command2>
     </div>
     <div v-else>
-      <Command2 :command="command" style="float: left;"></Command2>
-      <Command2 :command="preCommand" style="float: left;"></Command2>
+      <Command2
+        :command="command"
+        :unknwonMode="true"
+        style="float: left;"
+      ></Command2>
+      <Command2
+        :command="preCommand"
+        :unknwonMode="true"
+        style="float: left;"
+      ></Command2>
     </div>
     <div
       id="player1button"

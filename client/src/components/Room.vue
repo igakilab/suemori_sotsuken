@@ -120,13 +120,19 @@ export default class Room extends Vue {
       player1: {
         uid: string;
         logs: string[][];
-        command: string[];
+        commands: {
+          previous: string[];
+          now: string[];
+        };
         bomb: number;
       };
       player2: {
         uid: string | null;
         logs: string[][];
-        command: string[];
+        commands: {
+          previous: string[];
+          now: string[];
+        };
         bomb: number;
       };
       turn: boolean;
@@ -139,13 +145,19 @@ export default class Room extends Vue {
       player1: {
         uid: UserModule.uid,
         logs: [],
-        command: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
+        commands: {
+          previous: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
+          now: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL))
+        },
         bomb: this.bomb
       },
       player2: {
         uid: null,
         logs: [],
-        command: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
+        commands: {
+          previous: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
+          now: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL))
+        },
         bomb: this.bomb
       },
       turn: true
@@ -221,12 +233,10 @@ export default class Room extends Vue {
           end: boolean;
           player1: {
             uid: string;
-            logs: { player: number; command: string[] }[];
             bomb: number;
           };
           player2: {
             uid: string | null;
-            logs: { player: number; command: string[] }[];
             bomb: number;
           };
           turn: boolean;
