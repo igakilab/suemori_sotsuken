@@ -54,7 +54,10 @@
         :unknownMode="elapsedTime > 10 && !player1turn"
         style="float: left;"
       />
-      <Board :board="board" ref="ref_board" />
+      <div style="float: left;">
+        <Board :board="board" ref="ref_board" style="margin-bottom: 10px;" />
+        <Logs :logs="logs" style="clear:both; margin-right: 20px;" />
+      </div>
       <div style="float: left;">
         <Command
           :player1="false"
@@ -90,6 +93,7 @@ import Board from "@/components/Board.vue";
 import Controller from "@/components/Controller.vue";
 import UserModule from "@/store/user.ts";
 import undefined from "firebase/empty-import";
+import Logs from "@/components/Logs.vue";
 
 export const COMMAND_SIZE: number = 5;
 const sleep = (ms: number) => new Promise(f => setTimeout(f, ms));
@@ -168,7 +172,8 @@ export function fromBoard(board: number[][]) {
   components: {
     Command,
     Board,
-    Controller
+    Controller,
+    Logs
   }
 })
 export default class Game extends Vue {
@@ -186,7 +191,7 @@ export default class Game extends Vue {
   private prePlayer2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private player1bomb: number = 5;
   private player2bomb: number = 5;
-  private log: MOVE[][] = [];
+  private logs: string[] = [];
   private room: firebase.database.Reference = firebase.database().ref();
   private isPlayer1: boolean = true;
   private playing: boolean = false;
@@ -327,8 +332,10 @@ export default class Game extends Vue {
           );
           // 移動処理
           if (this.elapsedTime > 10) {
-            this.move(true);
-            this.move(false);
+            if (this.elapsedTime > 20) {
+              this.move(true);
+              this.move(false);
+            }
             const c1 = toCommandString(this.player1command);
             const c2 = toCommandString(this.player2command);
             this.prePlayer1command = this.player1command;
@@ -355,6 +362,12 @@ export default class Game extends Vue {
               .child("commands")
               .child("now")
               .set(toCommandString(this.player2command));
+            this.logs.unshift(`プレイヤー2:${c2.join("/")}`);
+            this.logs.unshift(`プレイヤー1:${c1.join("/")}`);
+            this.logs.unshift(
+              `ターン${Math.ceil(this.elapsedTime / 11)} コマンド設定`
+            );
+            this.room.child("logs").set(this.logs);
           }
           // 爆発処理
           const explosionPoints = this.explosion();
@@ -404,6 +417,10 @@ export default class Game extends Vue {
           this.player2command = fromCommand(data.val());
           this.setDisabledMove();
         });
+
+      this.room.child("logs").on("value", data => {
+        this.logs = data.val();
+      });
 
       this.room.child("elapsedTime").on("value", data => {
         this.elapsedTime = Number(data.val());
