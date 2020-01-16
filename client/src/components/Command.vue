@@ -1,28 +1,46 @@
 <template>
   <div style="margin-right: 20px;">
     <div v-if="player1">
-      <Command2
-        :command="preCommand"
-        :unknwonMode="true"
-        style="float: left;"
-      ></Command2>
-      <Command2
-        :command="command"
-        :unknwonMode="true"
-        style="float: left;"
-      ></Command2>
+      <div>
+        <table>
+          <tr>
+            <td
+              style="text-align: center; padding-right: 20px; vertical-align: bottom;"
+            >
+              next
+            </td>
+            <td style="text-align: center; padding-right: 20px;">now</td>
+          </tr>
+          <tr>
+            <td>
+              <Command3 :command="preCommand" :unknwonMode="true"></Command3>
+            </td>
+            <td>
+              <Command2 :command="command" :unknwonMode="true"></Command2>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
     <div v-else>
-      <Command2
-        :command="command"
-        :unknwonMode="true"
-        style="float: left;"
-      ></Command2>
-      <Command2
-        :command="preCommand"
-        :unknwonMode="true"
-        style="float: left;"
-      ></Command2>
+      <table>
+        <tr>
+          <td
+            style="text-align: center; padding-right: 20px; vertical-align: bottom;"
+          >
+            now
+          </td>
+          <td style="text-align: center; padding-right: 20px;">next</td>
+        </tr>
+        <tr>
+          <td>
+            <Command2 :command="command" :unknwonMode="true"></Command2>
+          </td>
+          <td>
+            <Command3 :command="preCommand" :unknwonMode="true"></Command3>
+          </td>
+        </tr>
+      </table>
     </div>
     <div
       id="player1button"
@@ -52,10 +70,12 @@
 import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Command2 from "@/components/Command2.vue";
+import Command3 from "@/components/Command3.vue";
 
 @Component({
   components: {
-    Command2
+    Command2,
+    Command3
   }
 })
 export default class Command extends Vue {

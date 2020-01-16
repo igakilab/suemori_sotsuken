@@ -57,6 +57,9 @@
       <div style="float: left;">
         <Board :board="board" ref="ref_board" style="margin-bottom: 10px;" />
         <Logs :logs="logs" style="clear:both; margin-right: 20px;" />
+        <p style="width: 350px; padding-top: 10px; float: left;">
+          ※コマンドを全て埋めない場合、ターン終了時自動的に移動コマンドが挿入されます。
+        </p>
       </div>
       <div style="float: left;">
         <Command
@@ -116,7 +119,11 @@ export enum MOVE {
   DOWN,
   BOMB,
   REDO,
-  END
+  END,
+  RANDOM_LEFT,
+  RANDOM_RIGHT,
+  RANDOM_UP,
+  RANDOM_DOWN
 }
 
 enum JUDGE {
@@ -137,6 +144,14 @@ export function fromCommand(commands: string[]): MOVE[] {
         return MOVE.RIGHT;
       case "DOWN":
         return MOVE.DOWN;
+      case "RANDOM_UP":
+        return MOVE.RANDOM_UP;
+      case "RANDOM_LEFT":
+        return MOVE.RANDOM_LEFT;
+      case "RANDOM_RIGHT":
+        return MOVE.RANDOM_RIGHT;
+      case "RANDOM_DOWN":
+        return MOVE.RANDOM_DOWN;
       case "BOMB":
         return MOVE.BOMB;
       default:
@@ -156,6 +171,14 @@ export function toCommandString(commands: MOVE[]) {
         return "RIGHT";
       case MOVE.DOWN:
         return "DOWN";
+      case MOVE.RANDOM_UP:
+        return "RANDOM_UP";
+      case MOVE.RANDOM_LEFT:
+        return "RANDOM_LEFT";
+      case MOVE.RANDOM_RIGHT:
+        return "RANDOM_RIGHT";
+      case MOVE.RANDOM_DOWN:
+        return "RANDOM_DOWN";
       case MOVE.BOMB:
         return "BOMB";
       default:
@@ -336,12 +359,22 @@ export default class Game extends Vue {
               this.move(true);
               this.move(false);
             }
-            const c1 = toCommandString(this.player1command);
-            const c2 = toCommandString(this.player2command);
-            this.prePlayer1command = this.player1command;
+            this.prePlayer1command = this.player1command.map(command => {
+              if (command === MOVE.NULL) {
+                return this.randomCommand();
+              }
+              return command;
+            });
             this.player1command = Array(COMMAND_SIZE).fill(MOVE.NULL);
-            this.prePlayer2command = this.player2command;
+            this.prePlayer2command = this.player2command.map(command => {
+              if (command === MOVE.NULL) {
+                return this.randomCommand();
+              }
+              return command;
+            });
             this.player2command = Array(COMMAND_SIZE).fill(MOVE.NULL);
+            const c1 = toCommandString(this.prePlayer1command);
+            const c2 = toCommandString(this.prePlayer2command);
             this.room
               .child("player1")
               .child("commands")
@@ -755,7 +788,12 @@ export default class Game extends Vue {
   }
 
   private randomCommand() {
-    const c = [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN];
+    const c = [
+      MOVE.RANDOM_UP,
+      MOVE.RANDOM_LEFT,
+      MOVE.RANDOM_RIGHT,
+      MOVE.RANDOM_DOWN
+    ];
     return c[Math.floor(Math.random() * c.length)];
   }
 
@@ -780,7 +818,8 @@ export default class Game extends Vue {
       const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
         isPlayer1
       );
-      const action = command ? command : this.randomCommand();
+      // const action = command ? command : this.randomCommand();
+      const action = command;
       if (
         [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
       ) {
