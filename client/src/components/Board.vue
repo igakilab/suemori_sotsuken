@@ -10,7 +10,8 @@
           <div
             v-if="cell.content === BOARD.WALL"
             style="width: 100%; height: 100%; background: black;"
-          ></div>
+          >
+          </div>
           <div v-if="cell.content === BOARD.BOMB" style="line-height: 0;">
             <font-awesome-icon icon="bomb" size="2x" />
             <span
@@ -25,10 +26,13 @@
             <font-awesome-icon icon="male" size="2x" style="color: blue;" />
           </div>
           <div
-            v-else-if="cell.content === BOARD.PLAYER2"
+            v-else-if="cell.content === BOARD.BLOCK_PLAYER1"
             style="line-height: 0;"
           >
-            <font-awesome-icon icon="male" size="2x" style="color: red;" />
+            <div class="spinner">
+              <div class="double-bounce"></div>
+              <font-awesome-icon icon="male" size="2x" style="color: blue; margin-top: 4px; margin-left:4px;" />
+            </div>
           </div>
           <div
             v-else-if="cell.content === BOARD.BOMB_ON_PLAYER1"
@@ -42,6 +46,35 @@
             />
           </div>
           <div
+            v-else-if="cell.content === BOARD.BLOCK_BOMB_ON_PLAYER1"
+            style="line-height: 0;"
+          >
+            <div class="spinner">
+              <div class="double-bounce"></div>
+              <font-awesome-icon icon="male" size="2x" style="color: blue; margin-top: 4px; margin-left:4px;" />
+              <font-awesome-icon
+                icon="bomb"
+                size="2x"
+                style="position: absolute; margin-left: -20px; z-index: -1;"
+              />
+            </div>
+          </div>
+          <div
+            v-else-if="cell.content === BOARD.PLAYER2"
+            style="line-height: 0;"
+          >
+            <font-awesome-icon icon="male" size="2x" style="color: red;" />
+          </div>
+          <div
+            v-else-if="cell.content === BOARD.BLOCK_PLAYER2"
+            style="line-height: 0;"
+          >
+            <div class="spinner">
+              <div class="double-bounce"></div>
+              <font-awesome-icon icon="male" size="2x" style="color: red; margin-top: 4px; margin-left:4px;" />
+            </div>
+          </div>
+          <div
             v-else-if="cell.content === BOARD.BOMB_ON_PLAYER2"
             style="line-height: 0;"
           >
@@ -51,6 +84,20 @@
               size="2x"
               style="position: absolute; margin-left: -20px; z-index: -1;"
             />
+          </div>
+          <div
+            v-else-if="cell.content === BOARD.BLOCK_BOMB_ON_PLAYER2"
+            style="line-height: 0;"
+          >
+            <div class="spinner">
+              <div class="double-bounce"></div>
+              <font-awesome-icon icon="male" size="2x" style="color: red; margin-top: 4px; margin-left:4px;" />
+              <font-awesome-icon
+                icon="bomb"
+                size="2x"
+                style="position: absolute; margin-left: -20px; z-index: -1;"
+              />
+            </div>
           </div>
           <div v-else-if="cell.content === BOARD.EXPLOSION">
             <svg
@@ -300,6 +347,36 @@ $pointer: 1;
   100% {
     transform: scale(1, 1) translate(0%, 0%);
     fill: #e2264d;
+  }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+
+  position: relative;
+  // margin: 100px auto;
+}
+
+.double-bounce {
+  width: 25px;
+  height: 50px;
+	border-radius: 100% 0 0 100% / 50%;
+  background-color: #00ffff;
+  opacity: 0.6;
+  position: absolute;
+  animation: sk-bounce 0.5s infinite ease-in-out;
+}
+
+@keyframes sk-bounce {
+  0% {
+    transform: scale(0);
+  }
+  99% {
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
   }
 }
 </style>

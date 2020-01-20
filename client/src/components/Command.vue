@@ -13,10 +13,13 @@
           </tr>
           <tr>
             <td>
-              <Command3 :command="preCommand" :unknwonMode="true"></Command3>
+              <PreCommand
+                :command="preCommand"
+                :unknwonMode="true"
+              ></PreCommand>
             </td>
             <td>
-              <Command2 :command="command" :unknwonMode="true"></Command2>
+              <NextCommand :command="command" :unknwonMode="true"></NextCommand>
             </td>
           </tr>
         </table>
@@ -34,10 +37,10 @@
         </tr>
         <tr>
           <td>
-            <Command2 :command="command" :unknwonMode="true"></Command2>
+            <NextCommand :command="command" :unknwonMode="true"></NextCommand>
           </td>
           <td>
-            <Command3 :command="preCommand" :unknwonMode="true"></Command3>
+            <PreCommand :command="preCommand" :unknwonMode="true"></PreCommand>
           </td>
         </tr>
       </table>
@@ -69,13 +72,13 @@
 <script lang="ts">
 import { MOVE } from "@/components/Game.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
-import Command2 from "@/components/Command2.vue";
-import Command3 from "@/components/Command3.vue";
+import PreCommand from "@/components/PreCommand.vue";
+import NextCommand from "@/components/NextCommand.vue";
 
 @Component({
   components: {
-    Command2,
-    Command3
+    PreCommand,
+    NextCommand
   }
 })
 export default class Command extends Vue {

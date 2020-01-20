@@ -45,6 +45,16 @@
       ></b-spinner
     ></b-alert>
     <div id="game1">
+      <div style="margin-bottom: 10px; margin-left: 220px;" class="clearfix">
+        <P1ExecuteCommand
+          :command="executePlayer1command"
+          style="float: left; margin-right: 90px;"
+        />
+        <P2ExecuteCommand
+          :command="executePlayer2command"
+          style="float: left;"
+        />
+      </div>
       <Command
         :player1="true"
         :turn="isPlayer1"
@@ -97,6 +107,8 @@ import Controller from "@/components/Controller.vue";
 import UserModule from "@/store/user.ts";
 import undefined from "firebase/empty-import";
 import Logs from "@/components/Logs.vue";
+import P1ExecuteCommand from "@/components/P1ExecuteCommand.vue";
+import P2ExecuteCommand from "@/components/P2ExecuteCommand.vue";
 
 export const COMMAND_SIZE: number = 5;
 const sleep = (ms: number) => new Promise(f => setTimeout(f, ms));
@@ -196,7 +208,9 @@ export function fromBoard(board: number[][]) {
     Command,
     Board,
     Controller,
-    Logs
+    Logs,
+    P1ExecuteCommand,
+    P2ExecuteCommand
   }
 })
 export default class Game extends Vue {
@@ -210,8 +224,14 @@ export default class Game extends Vue {
   private disabledEnd: boolean = true;
   private player1command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private prePlayer1command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private executePlayer1command: MOVE[] = new Array(COMMAND_SIZE).fill(
+    MOVE.NULL
+  );
   private player2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
   private prePlayer2command: MOVE[] = new Array(COMMAND_SIZE).fill(MOVE.NULL);
+  private executePlayer2command: MOVE[] = new Array(COMMAND_SIZE).fill(
+    MOVE.NULL
+  );
   private player1bomb: number = 5;
   private player2bomb: number = 5;
   private logs: string[] = [];
@@ -356,8 +376,16 @@ export default class Game extends Vue {
           // 移動処理
           if (this.elapsedTime > 10) {
             if (this.elapsedTime > 20) {
-              this.move(true);
-              this.move(false);
+              this.executePlayer1command = this.prePlayer1command.concat();
+              this.executePlayer2command = this.prePlayer2command.concat();
+              this.move(true, this.executePlayer1command)
+                .then(() => this.move(false, this.executePlayer2command))
+                .then(() => {
+                  // 爆発処理
+                  const explosionPoints = this.explosion();
+                  // 盤面クリア
+                  sleep(1000).then(() => this.clearBoard(explosionPoints));
+                });
             }
             this.prePlayer1command = this.player1command.map(command => {
               if (command === MOVE.NULL) {
@@ -402,12 +430,6 @@ export default class Game extends Vue {
             );
             this.room.child("logs").set(this.logs);
           }
-          // 爆発処理
-          const explosionPoints = this.explosion();
-          // 盤面データ送信
-          this.room.child("board").set(this.board);
-          // 盤面クリア
-          sleep(1000).then(() => this.clearBoard(explosionPoints));
           if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
             // 動かせなくする
             this.setDisabledMove();
@@ -421,9 +443,6 @@ export default class Game extends Vue {
     } else {
       this.room.child("board").on("value", data => {
         this.board = data.val();
-        // ゲーム終了判定(後で変える)
-        this.gameJudge();
-        sleep(1000).then(() => this.clearBoard());
       });
 
       this.room
@@ -455,9 +474,38 @@ export default class Game extends Vue {
         this.logs = data.val();
       });
 
-      this.room.child("elapsedTime").on("value", data => {
+      this.room.child("elapsedTime").on("value", async data => {
         this.elapsedTime = Number(data.val());
         if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+          // 爆弾カウントダウン
+          const bombPoint = [];
+          this.board.forEach((row, i) =>
+            row.forEach((cell, j) => {
+              switch (cell.content) {
+                case BOARD.BOMB:
+                  this.$set(
+                    this.board[i][j],
+                    "rest",
+                    this.board[i][j].rest - 1
+                  );
+                  bombPoint.push({ x: j, y: i });
+              }
+            })
+          );
+          if (this.elapsedTime > 20) {
+            this.executePlayer1command = this.prePlayer1command.concat();
+            this.executePlayer2command = this.prePlayer2command.concat();
+            this.move(true, this.executePlayer1command)
+              .then(() => this.move(false, this.executePlayer2command))
+              .then(() => {
+                // 爆発処理
+                const explosionPoints = this.explosion();
+                // 盤面クリア
+                sleep(1000).then(() => this.clearBoard(explosionPoints));
+              });
+          }
+          // ゲーム終了判定(後で変える)
+          this.gameJudge();
           // 動かせなくする
           this.setDisabledMove();
         }
@@ -467,17 +515,13 @@ export default class Game extends Vue {
 
   private gameJudge() {
     const player1 = this.board.some(row =>
-      row.some(
-        cell =>
-          cell.content === BOARD.PLAYER1 ||
-          cell.content === BOARD.BOMB_ON_PLAYER1
+      row.some(({ content }) =>
+        [BOARD.PLAYER1, BOARD.BOMB_ON_PLAYER1].includes(content)
       )
     );
     const player2 = this.board.some(row =>
-      row.some(
-        cell =>
-          cell.content === BOARD.PLAYER2 ||
-          cell.content === BOARD.BOMB_ON_PLAYER2
+      row.some(({ content }) =>
+        [BOARD.PLAYER2, BOARD.BOMB_ON_PLAYER2].includes(content)
       )
     );
 
@@ -797,7 +841,7 @@ export default class Game extends Vue {
     return c[Math.floor(Math.random() * c.length)];
   }
 
-  private async move(isPlayer1: boolean) {
+  private async move(isPlayer1: boolean, commands: MOVE[]) {
     const unMovingList = [
       BOARD.PLAYER1,
       BOARD.PLAYER2,
@@ -806,29 +850,45 @@ export default class Game extends Vue {
       BOARD.BOMB_ON_PLAYER1,
       BOARD.BOMB_ON_PLAYER2
     ];
-    const commands = isPlayer1
-      ? this.prePlayer1command
-      : this.prePlayer2command;
     const boardPlayer = isPlayer1 ? BOARD.PLAYER1 : BOARD.PLAYER2;
     const boardBombOnPlayer = isPlayer1
       ? BOARD.BOMB_ON_PLAYER1
       : BOARD.BOMB_ON_PLAYER2;
 
-    commands.forEach(command => {
-      const { x: x, y: y }: { x: number; y: number } = this.getPlayerIndex(
-        isPlayer1
-      );
-      // const action = command ? command : this.randomCommand();
-      const action = command;
+    for (let i = 0; i < commands.length; i++) {
+      await sleep(500);
+      const action = commands.shift() || MOVE.NULL;
+      commands.push(MOVE.NULL);
+      const {
+        x: x,
+        y: y
+      }: {
+        x: number;
+        y: number;
+      } = this.getPlayerIndex(isPlayer1);
       if (
-        [MOVE.UP, MOVE.LEFT, MOVE.RIGHT, MOVE.DOWN, MOVE.BOMB].includes(action)
+        [
+          MOVE.UP,
+          MOVE.LEFT,
+          MOVE.RIGHT,
+          MOVE.DOWN,
+          MOVE.BOMB,
+          MOVE.RANDOM_UP,
+          MOVE.RANDOM_LEFT,
+          MOVE.RANDOM_RIGHT,
+          MOVE.RANDOM_DOWN
+        ].includes(action)
       ) {
         if (action === MOVE.BOMB) {
-          this.$set(this.board[y], x, { content: boardBombOnPlayer, rest: 0 });
+          this.$set(this.board[y], x, {
+            content: boardBombOnPlayer,
+            rest: 0
+          });
         } else {
           let moving = false;
           switch (action) {
             case MOVE.UP:
+            case MOVE.RANDOM_UP:
               if (
                 y > 0 &&
                 !unMovingList.includes(this.board[y - 1][x].content)
@@ -841,6 +901,7 @@ export default class Game extends Vue {
               }
               break;
             case MOVE.LEFT:
+            case MOVE.RANDOM_LEFT:
               if (
                 x > 0 &&
                 !unMovingList.includes(this.board[y][x - 1].content)
@@ -853,6 +914,7 @@ export default class Game extends Vue {
               }
               break;
             case MOVE.RIGHT:
+            case MOVE.RANDOM_RIGHT:
               if (
                 x < this.board[y].length - 1 &&
                 !unMovingList.includes(this.board[y][x + 1].content)
@@ -865,6 +927,7 @@ export default class Game extends Vue {
               }
               break;
             case MOVE.DOWN:
+            case MOVE.RANDOM_DOWN:
               if (
                 y < this.board.length - 1 &&
                 !unMovingList.includes(this.board[y + 1][x].content)
@@ -894,7 +957,7 @@ export default class Game extends Vue {
           }
         }
       }
-    });
+    }
   }
 
   get refs(): any {
