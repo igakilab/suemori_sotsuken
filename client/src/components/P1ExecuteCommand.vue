@@ -47,7 +47,6 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 @Component
 export default class Command extends Vue {
   @Prop() command!: symbol[];
-  @Prop({ default: false }) private unknownMode!: boolean;
 
   get MOVE() {
     return MOVE;

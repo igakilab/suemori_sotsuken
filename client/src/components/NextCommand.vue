@@ -2,28 +2,32 @@
   <div style="margin-right: 20px;">
     <div v-for="(m, index) in command" :key="index" class="frame_stroke_rect">
       <font-awesome-icon
-        v-if="m === MOVE.UP"
+        v-if="!unknownMode && m === MOVE.UP"
         icon="arrow-alt-circle-up"
         size="5x"
       />
       <font-awesome-icon
-        v-else-if="m === MOVE.LEFT"
+        v-else-if="!unknownMode && m === MOVE.LEFT"
         icon="arrow-alt-circle-left"
         size="5x"
       />
       <font-awesome-icon
-        v-else-if="m === MOVE.RIGHT"
+        v-else-if="!unknownMode && m === MOVE.RIGHT"
         icon="arrow-alt-circle-right"
         size="5x"
       />
       <font-awesome-icon
-        v-else-if="m === MOVE.DOWN"
+        v-else-if="!unknownMode && m === MOVE.DOWN"
         icon="arrow-alt-circle-down"
         size="5x"
       />
-      <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="5x" />
       <font-awesome-icon
-        v-else-if="m === MOVE.NULL && unknownMode"
+        v-else-if="!unknownMode && m === MOVE.BOMB"
+        icon="bomb"
+        size="5x"
+      />
+      <font-awesome-icon
+        v-else-if="m !== MOVE.NULL && unknownMode"
         icon="question-circle"
         size="5x"
       />

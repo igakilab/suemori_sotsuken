@@ -36,9 +36,10 @@
       ></b-spinner
     ></b-alert>
     <b-alert v-else show variant="success"
-      >ゲームスタート！ 次の動作まで残り{{
-        10 - (elapsedTime % 11)
-      }}秒<b-spinner
+      >次の動作まで残り<span style="font-size: xx-large; margin:10px;">{{
+        waitTime - (elapsedTime % (waitTime + 1))
+      }}</span
+      >秒<b-spinner
         variant="success"
         label="Spinning"
         style="margin-left: 15px;"
@@ -61,7 +62,7 @@
         :command="player1command"
         :preCommand="prePlayer1command"
         :bomb="player1bomb"
-        :unknownMode="elapsedTime > 10 && !player1turn"
+        :unknownMode="!isPlayer1 && unknownMode"
         style="float: left;"
       />
       <div style="float: left;">
@@ -78,7 +79,7 @@
           :command="player2command"
           :preCommand="prePlayer2command"
           :bomb="player2bomb"
-          :unknownMode="elapsedTime > 10 && player1turn"
+          :unknownMode="isPlayer1 && unknownMode"
           style="float: left;"
         />
         <Controller
@@ -232,15 +233,17 @@ export default class Game extends Vue {
   private executePlayer2command: MOVE[] = new Array(COMMAND_SIZE).fill(
     MOVE.NULL
   );
-  private player1bomb: number = 5;
-  private player2bomb: number = 5;
+  private player1bomb: number = -1;
+  private player2bomb: number = -1;
   private logs: string[] = [];
   private room: firebase.database.Reference = firebase.database().ref();
   private isPlayer1: boolean = true;
   private playing: boolean = false;
   private elapsedTime: number = 0;
   private judge: JUDGE = JUDGE.CONTINUE;
-  private player1turn: boolean = true;
+  private unknownMode: boolean = false;
+  private waitTime: number = 10;
+  private zigzag: boolean = false;
 
   get JUDGE() {
     return JUDGE;
@@ -342,6 +345,18 @@ export default class Game extends Vue {
         }
       });
 
+    this.waitTime = this.player2bomb = Number(
+      (await this.room.child("waitTime").once("value")).val()
+    );
+
+    this.player1bomb = this.player2bomb = Number(
+      (await this.room.child("initBomb").once("value")).val()
+    );
+
+    this.unknownMode = !(await this.room.child("visible").once("value")).val();
+
+    this.zigzag = (await this.room.child("zigzag").once("value")).val();
+
     this.room
       .child(opponent)
       .child("commands")
@@ -357,7 +372,10 @@ export default class Game extends Vue {
     // プレイヤー1を親として動かし、プレイヤー2は操作だけを送信
     if (this.isPlayer1) {
       for await (const value of this.makeRangeIterator()) {
-        if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+        if (
+          this.elapsedTime % (this.waitTime + 1) === 0 &&
+          this.elapsedTime > 0
+        ) {
           // 爆弾カウントダウン
           const bombPoint = [];
           this.board.forEach((row, i) =>
@@ -374,18 +392,32 @@ export default class Game extends Vue {
             })
           );
           // 移動処理
-          if (this.elapsedTime > 10) {
-            if (this.elapsedTime > 20) {
+          if (this.elapsedTime > this.waitTime) {
+            const turnNum = Math.ceil(this.elapsedTime / (this.waitTime + 1));
+            if (this.elapsedTime > this.waitTime * 2) {
               this.executePlayer1command = this.prePlayer1command.concat();
               this.executePlayer2command = this.prePlayer2command.concat();
-              this.move(true, this.executePlayer1command)
-                .then(() => this.move(false, this.executePlayer2command))
-                .then(() => {
+              if (turnNum % 2 === 0 || !this.zigzag) {
+                this.move(true, this.executePlayer1command)
+                  .then(() => this.move(false, this.executePlayer2command))
                   // 爆発処理
-                  const explosionPoints = this.explosion();
-                  // 盤面クリア
-                  sleep(1000).then(() => this.clearBoard(explosionPoints));
-                });
+                  .then(() => this.explosion())
+                  .then(explosionPoints => {
+                    // 盤面クリア
+                    this.clearBoard(explosionPoints);
+                    this.gameJudge();
+                  });
+              } else {
+                this.move(false, this.executePlayer2command)
+                  .then(() => this.move(true, this.executePlayer1command))
+                  // 爆発処理
+                  .then(() => this.explosion())
+                  .then(explosionPoints => {
+                    // 盤面クリア
+                    this.clearBoard(explosionPoints);
+                    this.gameJudge();
+                  });
+              }
             }
             this.prePlayer1command = this.player1command.map(command => {
               if (command === MOVE.NULL) {
@@ -423,20 +455,37 @@ export default class Game extends Vue {
               .child("commands")
               .child("now")
               .set(toCommandString(this.player2command));
-            this.logs.unshift(`プレイヤー2:${c2.join("/")}`);
-            this.logs.unshift(`プレイヤー1:${c1.join("/")}`);
-            this.logs.unshift(
-              `ターン${Math.ceil(this.elapsedTime / 11)} コマンド設定`
-            );
+            if (!this.unknownMode) {
+              this.logs.unshift(
+                `プレイヤー2:${c2
+                  .map(s =>
+                    s
+                      .split("_")
+                      .map(s => s[0])
+                      .join("_")
+                  )
+                  .join("/")}`
+              );
+              this.logs.unshift(
+                `プレイヤー1:${c1
+                  .map(s =>
+                    s
+                      .split("_")
+                      .map(s => s[0])
+                      .join("_")
+                  )
+                  .join("/")}`
+              );
+            }
+            this.logs.unshift(`ターン${turnNum} コマンド設定`);
             this.room.child("logs").set(this.logs);
           }
-          if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+          if (
+            this.elapsedTime % (this.waitTime + 1) === 0 &&
+            this.elapsedTime > 0
+          ) {
             // 動かせなくする
             this.setDisabledMove();
-          }
-          // ゲーム終了判定(後で変える)
-          if (this.gameJudge()) {
-            break;
           }
         }
       }
@@ -476,7 +525,10 @@ export default class Game extends Vue {
 
       this.room.child("elapsedTime").on("value", async data => {
         this.elapsedTime = Number(data.val());
-        if (this.elapsedTime % 11 === 0 && this.elapsedTime > 0) {
+        if (
+          this.elapsedTime % (this.waitTime + 1) === 0 &&
+          this.elapsedTime > 0
+        ) {
           // 爆弾カウントダウン
           const bombPoint = [];
           this.board.forEach((row, i) =>
@@ -492,20 +544,34 @@ export default class Game extends Vue {
               }
             })
           );
-          if (this.elapsedTime > 20) {
+          const turnNum = Math.ceil(this.elapsedTime / (this.waitTime + 1));
+          if (this.elapsedTime > this.waitTime * 2) {
             this.executePlayer1command = this.prePlayer1command.concat();
             this.executePlayer2command = this.prePlayer2command.concat();
-            this.move(true, this.executePlayer1command)
-              .then(() => this.move(false, this.executePlayer2command))
-              .then(() => {
+            if (turnNum % 2 === 0 || !this.zigzag) {
+              this.move(true, this.executePlayer1command)
+                .then(() => this.move(false, this.executePlayer2command))
                 // 爆発処理
-                const explosionPoints = this.explosion();
-                // 盤面クリア
-                sleep(1000).then(() => this.clearBoard(explosionPoints));
-              });
+                .then(() => this.explosion())
+                .then(explosionPoints => {
+                  // 盤面クリア
+                  this.clearBoard(explosionPoints);
+                  this.gameJudge();
+                });
+            } else {
+              this.move(false, this.executePlayer2command)
+                .then(() => this.move(true, this.executePlayer1command))
+                // 爆発処理
+                .then(() => this.explosion())
+                .then(explosionPoints => {
+                  // 盤面クリア
+                  this.clearBoard(explosionPoints);
+                  this.gameJudge();
+                });
+            }
           }
-          // ゲーム終了判定(後で変える)
-          this.gameJudge();
+          // // ゲーム終了判定(後で変える)
+          // this.gameJudge();
           // 動かせなくする
           this.setDisabledMove();
         }
@@ -562,7 +628,7 @@ export default class Game extends Vue {
     }
   }
 
-  private explosion(causeExplosion = false) {
+  private async explosion(causeExplosion = false) {
     const explosionPoints: { x: number; y: number }[] = [];
     this.board.forEach((row, i) => {
       row.forEach((cell, j) => {
@@ -640,7 +706,7 @@ export default class Game extends Vue {
       });
     });
 
-    return explosionPoints;
+    return await sleep(1000).then(() => explosionPoints);
   }
 
   public async created() {

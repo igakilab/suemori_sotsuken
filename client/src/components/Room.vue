@@ -7,14 +7,33 @@
       <b-modal id="createRoomModal" title="ルーム作成" @ok="genRoom">
         <b-form-group label="ゲームモード" style="cursor: pointer;">
           <b-form-radio-group
-            id="btn-radios-2"
-            v-model="mode"
-            :options="[1, 2]"
+            v-model="visible"
+            :options="[
+              { item: true, name: '相手行動表示' },
+              { item: false, name: '相手行動非表示' }
+            ]"
+            value-field="item"
+            text-field="name"
+            buttons
+            button-variant="outline-primary"
+            name="radio-btn-outline"
+            style="margin-bottom: 10px;"
+          ></b-form-radio-group>
+          <b-form-radio-group
+            v-model="zigzag"
+            :options="[
+              { item: false, name: '行動順[1→2],[1→2],[1→2],...' },
+              { item: true, name: '行動順[1→2],[2→1],[1→2],...' }
+            ]"
+            value-field="item"
+            text-field="name"
             buttons
             button-variant="outline-primary"
             name="radio-btn-outline"
           ></b-form-radio-group>
         </b-form-group>
+        行動間隔
+        <b-form-input v-model="waitTime" type="number"></b-form-input>
         爆弾数
         <b-form-input v-model="bomb" type="number"></b-form-input>
       </b-modal>
@@ -26,9 +45,9 @@
           <b-button size="sm" @click="enterRoom(row.item.id)" class="mr-2">
             入室
           </b-button>
-          <b-button size="sm" class="mr-2" :disabled="true">
+          <!-- <b-button size="sm" class="mr-2" :disabled="true">
             観戦
-          </b-button>
+          </b-button> -->
           <b-modal
             :id="infoModal.id"
             :title="infoModal.title"
@@ -59,13 +78,16 @@ import {
 export default class Room extends Vue {
   private fields: { key: string; label: string }[] = [
     { key: "id", label: "ルームID" },
-    { key: "mode", label: "ゲームモード" },
+    { key: "visible", label: "相手行動" },
+    { key: "zigzag", label: "行動順序" },
     { key: "player1", label: "プレイヤー1ID" },
     { key: "actions", label: "" }
   ];
   private rooms: {}[] = [];
-  private mode: number = 1;
+  private visible: boolean = true;
+  private zigzag: boolean = false;
   private bomb: number = 5;
+  private waitTime: number = 10;
 
   get uid() {
     return UserModule.uid;
@@ -113,7 +135,6 @@ export default class Room extends Vue {
     );
     const room: {
       id: number;
-      mode: number;
       board: number[][];
       playing: boolean;
       end: boolean;
@@ -136,9 +157,12 @@ export default class Room extends Vue {
         bomb: number;
       };
       turn: boolean;
+      initBomb: number;
+      waitTime: number;
+      visible: boolean;
+      zigzag: boolean;
     } = {
       id: Number(roomCount) + 1,
-      mode: this.mode,
       board: board,
       playing: false,
       end: false,
@@ -160,7 +184,11 @@ export default class Room extends Vue {
         },
         bomb: this.bomb
       },
-      turn: true
+      turn: true,
+      initBomb: this.bomb,
+      waitTime: this.waitTime,
+      visible: this.visible,
+      zigzag: this.zigzag
     };
 
     roomRef.child(String(Number(roomCount) + 1)).set(room);
@@ -240,6 +268,10 @@ export default class Room extends Vue {
             bomb: number;
           };
           turn: boolean;
+          initBomb: number;
+          waitTime: number;
+          visible: boolean;
+          zigzag: boolean;
         };
       } | null = snapshot.val();
 
@@ -252,11 +284,12 @@ export default class Room extends Vue {
               room.player1 &&
               room.player1.uid !== UserModule.uid
           )
-          .map(room => {
+          .map(({ id, visible, zigzag, player1 }) => {
             return {
-              id: room.id,
-              mode: room.mode,
-              player1: room.player1.uid
+              id,
+              visible: visible ? "表示" : "非表示",
+              zigzag: zigzag ? "ジグザグ" : "一定",
+              player1: player1.uid
             };
           });
       }

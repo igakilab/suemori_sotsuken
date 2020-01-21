@@ -15,28 +15,34 @@
       "
     >
       <font-awesome-icon
-        v-if="m === MOVE.UP || m === MOVE.RANDOM_UP"
+        v-if="!unknownMode && (m === MOVE.UP || m === MOVE.RANDOM_UP)"
         icon="arrow-alt-circle-up"
         size="4x"
       />
       <font-awesome-icon
-        v-else-if="m === MOVE.LEFT || m === MOVE.RANDOM_LEFT"
+        v-else-if="!unknownMode && (m === MOVE.LEFT || m === MOVE.RANDOM_LEFT)"
         icon="arrow-alt-circle-left"
         size="4x"
       />
       <font-awesome-icon
-        v-else-if="m === MOVE.RIGHT || m === MOVE.RANDOM_RIGHT"
+        v-else-if="
+          !unknownMode && (m === MOVE.RIGHT || m === MOVE.RANDOM_RIGHT)
+        "
         icon="arrow-alt-circle-right"
         size="4x"
       />
       <font-awesome-icon
-        v-else-if="m === MOVE.DOWN || m === MOVE.RANDOM_DOWN"
+        v-else-if="!unknownMode && (m === MOVE.DOWN || m === MOVE.RANDOM_DOWN)"
         icon="arrow-alt-circle-down"
         size="4x"
       />
-      <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" size="4x" />
       <font-awesome-icon
-        v-else-if="m === MOVE.NULL && unknownMode"
+        v-else-if="!unknownMode && m === MOVE.BOMB"
+        icon="bomb"
+        size="4x"
+      />
+      <font-awesome-icon
+        v-else-if="m !== MOVE.NULL && unknownMode"
         icon="question-circle"
         size="4x"
       />

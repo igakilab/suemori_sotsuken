@@ -10,8 +10,7 @@
           <div
             v-if="cell.content === BOARD.WALL"
             style="width: 100%; height: 100%; background: black;"
-          >
-          </div>
+          ></div>
           <div v-if="cell.content === BOARD.BOMB" style="line-height: 0;">
             <font-awesome-icon icon="bomb" size="2x" />
             <span
@@ -31,7 +30,11 @@
           >
             <div class="spinner">
               <div class="double-bounce"></div>
-              <font-awesome-icon icon="male" size="2x" style="color: blue; margin-top: 4px; margin-left:4px;" />
+              <font-awesome-icon
+                icon="male"
+                size="2x"
+                style="color: blue; margin-top: 4px; margin-left:4px;"
+              />
             </div>
           </div>
           <div
@@ -51,7 +54,11 @@
           >
             <div class="spinner">
               <div class="double-bounce"></div>
-              <font-awesome-icon icon="male" size="2x" style="color: blue; margin-top: 4px; margin-left:4px;" />
+              <font-awesome-icon
+                icon="male"
+                size="2x"
+                style="color: blue; margin-top: 4px; margin-left:4px;"
+              />
               <font-awesome-icon
                 icon="bomb"
                 size="2x"
@@ -71,7 +78,11 @@
           >
             <div class="spinner">
               <div class="double-bounce"></div>
-              <font-awesome-icon icon="male" size="2x" style="color: red; margin-top: 4px; margin-left:4px;" />
+              <font-awesome-icon
+                icon="male"
+                size="2x"
+                style="color: red; margin-top: 4px; margin-left:4px;"
+              />
             </div>
           </div>
           <div
@@ -91,7 +102,11 @@
           >
             <div class="spinner">
               <div class="double-bounce"></div>
-              <font-awesome-icon icon="male" size="2x" style="color: red; margin-top: 4px; margin-left:4px;" />
+              <font-awesome-icon
+                icon="male"
+                size="2x"
+                style="color: red; margin-top: 4px; margin-left:4px;"
+              />
               <font-awesome-icon
                 icon="bomb"
                 size="2x"
@@ -361,7 +376,7 @@ $pointer: 1;
 .double-bounce {
   width: 25px;
   height: 50px;
-	border-radius: 100% 0 0 100% / 50%;
+  border-radius: 100% 0 0 100% / 50%;
   background-color: #00ffff;
   opacity: 0.6;
   position: absolute;

@@ -15,11 +15,14 @@
             <td>
               <PreCommand
                 :command="preCommand"
-                :unknwonMode="true"
+                :unknownMode="unknownMode"
               ></PreCommand>
             </td>
             <td>
-              <NextCommand :command="command" :unknwonMode="true"></NextCommand>
+              <NextCommand
+                :command="command"
+                :unknownMode="unknownMode"
+              ></NextCommand>
             </td>
           </tr>
         </table>
@@ -37,10 +40,16 @@
         </tr>
         <tr>
           <td>
-            <NextCommand :command="command" :unknwonMode="true"></NextCommand>
+            <NextCommand
+              :command="command"
+              :unknownMode="unknownMode"
+            ></NextCommand>
           </td>
           <td>
-            <PreCommand :command="preCommand" :unknwonMode="true"></PreCommand>
+            <PreCommand
+              :command="preCommand"
+              :unknownMode="unknownMode"
+            ></PreCommand>
           </td>
         </tr>
       </table>
@@ -64,7 +73,9 @@
       >
         x
       </div>
-      <div class="bomb" style="display: inline-block;">{{ bomb }}</div>
+      <div class="bomb" style="display: inline-block;">
+        {{ bomb >= 0 ? bomb : "-" }}
+      </div>
     </div>
   </div>
 </template>
