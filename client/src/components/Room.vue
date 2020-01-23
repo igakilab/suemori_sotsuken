@@ -7,10 +7,12 @@
       <b-modal id="createRoomModal" title="ルーム作成" @ok="genRoom">
         <b-form-group label="ゲームモード" style="cursor: pointer;">
           <b-form-radio-group
-            v-model="visible"
+            v-model="visibleMode"
             :options="[
-              { item: true, name: '相手行動表示' },
-              { item: false, name: '相手行動非表示' }
+              { item: 0, name: '1P→2P表示/2P→1P表示' },
+              { item: 1, name: '1P→2P表示/2P→1P非表示' },
+              { item: 2, name: '1P→2P非表示/2P→1P表示' },
+              { item: 3, name: '1P→2P非表示/2P→1P非表示' }
             ]"
             value-field="item"
             text-field="name"
@@ -78,16 +80,16 @@ import {
 export default class Room extends Vue {
   private fields: { key: string; label: string }[] = [
     { key: "id", label: "ルームID" },
-    { key: "visible", label: "相手行動" },
+    { key: "visibleMode", label: "相手行動" },
     { key: "zigzag", label: "行動順序" },
     { key: "player1", label: "プレイヤー1ID" },
     { key: "actions", label: "" }
   ];
   private rooms: {}[] = [];
-  private visible: boolean = true;
+  private visibleMode: number = 0;
   private zigzag: boolean = false;
   private bomb: number = 5;
-  private waitTime: number = 10;
+  private waitTime: number = 15;
 
   get uid() {
     return UserModule.uid;
@@ -159,7 +161,7 @@ export default class Room extends Vue {
       turn: boolean;
       initBomb: number;
       waitTime: number;
-      visible: boolean;
+      visibleMode: number;
       zigzag: boolean;
     } = {
       id: Number(roomCount) + 1,
@@ -187,7 +189,7 @@ export default class Room extends Vue {
       turn: true,
       initBomb: this.bomb,
       waitTime: this.waitTime,
-      visible: this.visible,
+      visibleMode: this.visibleMode,
       zigzag: this.zigzag
     };
 
@@ -270,7 +272,7 @@ export default class Room extends Vue {
           turn: boolean;
           initBomb: number;
           waitTime: number;
-          visible: boolean;
+          visibleMode: number;
           zigzag: boolean;
         };
       } | null = snapshot.val();
@@ -284,10 +286,15 @@ export default class Room extends Vue {
               room.player1 &&
               room.player1.uid !== UserModule.uid
           )
-          .map(({ id, visible, zigzag, player1 }) => {
+          .map(({ id, visibleMode, zigzag, player1 }) => {
             return {
               id,
-              visible: visible ? "表示" : "非表示",
+              visibleMode: [
+                "1P→2P表示/2P→1P表示",
+                "1P→2P表示/2P→1P非表示",
+                "1P→2P非表示/2P→1P表示",
+                "1P→2P非表示/2P→1P非表示"
+              ][visibleMode],
               zigzag: zigzag ? "ジグザグ" : "一定",
               player1: player1.uid
             };

@@ -353,7 +353,12 @@ export default class Game extends Vue {
       (await this.room.child("initBomb").once("value")).val()
     );
 
-    this.unknownMode = !(await this.room.child("visible").once("value")).val();
+    const visibleMode: number = (
+      await this.room.child("visibleMode").once("value")
+    ).val();
+    this.unknownMode = this.isPlayer1
+      ? [2, 3].includes(visibleMode)
+      : [1, 3].includes(visibleMode);
 
     this.zigzag = (await this.room.child("zigzag").once("value")).val();
 
