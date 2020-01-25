@@ -1,9 +1,9 @@
 ## 準備
 ### Visual Studio Code(vscode)のダウンロード
-・以下のサイトからvscodeをダウンロードする．
-  このゲームではバージョン1.41.1を使用している．
-  ダウンロードしたら任意の場所に解凍する．
-  https://azure.microsoft.com/ja-jp/products/visual-studio-code/
+・以下のサイトからvscodeをダウンロードする.  
+  このゲームではバージョン1.41.1を使用している.  
+  ダウンロードしたら任意の場所に解凍する.  
+  https://azure.microsoft.com/ja-jp/products/visual-studio-code/  
 
 ・vscodeを解凍して，開いた後，画面左にあるアイコンでExtensionsをクリックし，下記の拡張機能をインストールする
   検索窓に拡張機能名を入力し，対象の拡張機能を選択して，Installをクリックする．　　
