@@ -595,8 +595,22 @@ export default class Game extends Vue {
         [BOARD.PLAYER2, BOARD.BOMB_ON_PLAYER2].includes(content)
       )
     );
+    const hasBomb =
+      this.board.some((row, i) =>
+        row.some((cell, j) => {
+          switch (cell.content) {
+            case BOARD.BOMB:
+            case BOARD.BOMB_ON_PLAYER1:
+            case BOARD.BOMB_ON_PLAYER2:
+              return true;
+          }
+          return false;
+        })
+      ) ||
+      this.player1bomb > 0 ||
+      this.player2bomb > 0;
 
-    if (!player1 && !player2) {
+    if ((!player1 && !player2) || (player1 && player2 && !hasBomb)) {
       this.judge = JUDGE.DRAW;
       this.$bvModal.show("resultModal");
       return true;
