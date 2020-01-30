@@ -89,7 +89,7 @@ export default class Room extends Vue {
   private visibleMode: number = 0;
   private zigzag: boolean = false;
   private bomb: number = 10;
-  private waitTime: number = 15;
+  private waitTime: number = 20;
 
   get uid() {
     return UserModule.uid;
