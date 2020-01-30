@@ -650,20 +650,22 @@ export default class Game extends Vue {
           ranges
             .filter(
               ({ x, y }) =>
-                i - y >= 0 &&
-                j - x >= 0 &&
+                i + y >= 0 &&
+                i + y < this.board.length &&
+                j + x >= 0 &&
+                j + x < row.length &&
                 !(
-                  this.board[i - y][j - x].content === BOARD.WALL ||
-                  (this.board[i - y][j - x].content === BOARD.BOMB &&
-                    this.board[i - y][j - x].rest === 0)
+                  this.board[i + y][j + x].content === BOARD.WALL ||
+                  (this.board[i + y][j + x].content === BOARD.BOMB &&
+                    this.board[i + y][j + x].rest === 0)
                 )
             )
             .forEach(({ x, y }) => {
-              this.$set(this.board[i - y], j - x, {
+              this.$set(this.board[i + y], j + x, {
                 content: BOARD.BLAST,
                 rest: 0
               });
-              explosionPoints.push({ x: j - x, y: i - y });
+              explosionPoints.push({ x: j + x, y: i + y });
             });
           this.$set(this.board[i], j, { content: BOARD.EXPLOSION, rest: 0 });
           explosionPoints.push({ x: j, y: i });
