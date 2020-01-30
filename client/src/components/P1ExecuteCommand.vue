@@ -32,10 +32,6 @@
         icon="arrow-alt-circle-down"
       />
       <font-awesome-icon v-else-if="m === MOVE.BOMB" icon="bomb" />
-      <font-awesome-icon
-        v-else-if="m === MOVE.NULL && unknownMode"
-        icon="question-circle"
-      />
     </div>
   </div>
 </template>

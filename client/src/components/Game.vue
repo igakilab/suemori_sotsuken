@@ -19,15 +19,6 @@
         You are Lose...
       </div></b-modal
     >
-    <!-- <b-modal id="waitTurn" hide-header hide-footer no-close-on-backdrop>
-      <template v-slot:modal-title>
-        Using <code>$bvModal</code> Methods
-      </template>
-      <div class="d-block text-center">
-        <h3>相手プレイヤーが行動中です</h3>
-        <b-spinner label="Spinning" style="margin-left: 15px;"></b-spinner>
-      </div>
-    </b-modal> -->
     <b-alert show variant="primary" v-if="!playing"
       >プレイヤーを待機しています…<b-spinner
         style="margin-left: 10px;"
@@ -330,8 +321,6 @@ export default class Game extends Vue {
       return;
     }
 
-    this.setDisabledMove();
-
     const opponent = `player${!this.isPlayer1 ? 1 : 2}`;
 
     this.room
@@ -352,6 +341,8 @@ export default class Game extends Vue {
     this.player1bomb = this.player2bomb = Number(
       (await this.room.child("initBomb").once("value")).val()
     );
+
+    this.setDisabledMove();
 
     const visibleMode: number = (
       await this.room.child("visibleMode").once("value")
@@ -647,78 +638,33 @@ export default class Game extends Vue {
     }
   }
 
-  private async explosion(causeExplosion = false) {
+  private async explosion() {
+    const ranges = [-2, -1, 0, 1, 2]
+      .map(x => [-2, -1, 0, 1, 2].map(y => ({ x, y })))
+      .flat();
     const explosionPoints: { x: number; y: number }[] = [];
     this.board.forEach((row, i) => {
       row.forEach((cell, j) => {
         if (cell.content === BOARD.BOMB && cell.rest === 0) {
           const unbrastList: BOARD[] = [BOARD.WALL];
-          if (
-            j > 0 &&
-            i > 0 &&
-            !unbrastList.includes(this.board[i - 1][j - 1].content)
-          ) {
-            this.$set(this.board[i - 1], j - 1, {
-              content: BOARD.BLAST,
-              rest: 0
+          ranges
+            .filter(
+              ({ x, y }) =>
+                i - y >= 0 &&
+                j - x >= 0 &&
+                !(
+                  this.board[i - y][j - x].content === BOARD.WALL ||
+                  (this.board[i - y][j - x].content === BOARD.BOMB &&
+                    this.board[i - y][j - x].rest === 0)
+                )
+            )
+            .forEach(({ x, y }) => {
+              this.$set(this.board[i - y], j - x, {
+                content: BOARD.BLAST,
+                rest: 0
+              });
+              explosionPoints.push({ x: j - x, y: i - y });
             });
-            explosionPoints.push({ x: j - 1, y: i - 1 });
-          }
-          if (j > 0 && !unbrastList.includes(this.board[i][j - 1].content)) {
-            this.$set(this.board[i], j - 1, { content: BOARD.BLAST, rest: 0 });
-            explosionPoints.push({ x: j - 1, y: i });
-          }
-          if (
-            j > 0 &&
-            i < this.board[0].length - 1 &&
-            !unbrastList.includes(this.board[i + 1][j - 1].content)
-          ) {
-            this.$set(this.board[i + 1], j - 1, {
-              content: BOARD.BLAST,
-              rest: 0
-            });
-            explosionPoints.push({ x: j - 1, y: i + 1 });
-          }
-          if (i > 0 && !unbrastList.includes(this.board[i - 1][j].content)) {
-            this.$set(this.board[i - 1], j, { content: BOARD.BLAST, rest: 0 });
-            explosionPoints.push({ x: j, y: i - 1 });
-          }
-          if (
-            i < this.board[0].length - 1 &&
-            !unbrastList.includes(this.board[i + 1][j].content)
-          ) {
-            this.$set(this.board[i + 1], j, { content: BOARD.BLAST, rest: 0 });
-            explosionPoints.push({ x: j, y: i + 1 });
-          }
-          if (
-            j < this.board.length - 1 &&
-            i > 0 &&
-            !unbrastList.includes(this.board[i - 1][j + 1].content)
-          ) {
-            this.$set(this.board[i - 1], j + 1, {
-              content: BOARD.BLAST,
-              rest: 0
-            });
-            explosionPoints.push({ x: j + 1, y: i - 1 });
-          }
-          if (
-            j < this.board.length - 1 &&
-            !unbrastList.includes(this.board[i][j + 1].content)
-          ) {
-            this.$set(this.board[i], j + 1, { content: BOARD.BLAST, rest: 0 });
-            explosionPoints.push({ x: j + 1, y: i });
-          }
-          if (
-            j < this.board.length - 1 &&
-            i < this.board[0].length - 1 &&
-            !unbrastList.includes(this.board[i + 1][j + 1].content)
-          ) {
-            this.$set(this.board[i + 1], j + 1, {
-              content: BOARD.BLAST,
-              rest: 0
-            });
-            explosionPoints.push({ x: j + 1, y: i + 1 });
-          }
           this.$set(this.board[i], j, { content: BOARD.EXPLOSION, rest: 0 });
           explosionPoints.push({ x: j, y: i });
         }
@@ -951,6 +897,11 @@ export default class Game extends Vue {
         x: number;
         y: number;
       } = this.getPlayerIndex(isPlayer1);
+
+      if (x === -1 && y === -1) {
+        break;
+      }
+
       if (
         [
           MOVE.UP,
