@@ -2,7 +2,7 @@
   <div id="logs">
     <b-form-textarea
       plaintext
-      :value="logs.join('\n')"
+      :value="logs ? logs.join('\n') : ''"
       rows="3"
     ></b-form-textarea>
   </div>

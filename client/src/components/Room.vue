@@ -35,9 +35,9 @@
           ></b-form-radio-group>
         </b-form-group>
         行動間隔
-        <b-form-input v-model="waitTime" type="number"></b-form-input>
+        <b-form-input v-model="waitTime" type="number" min="10"></b-form-input>
         爆弾数
-        <b-form-input v-model="bomb" type="number"></b-form-input>
+        <b-form-input v-model="bomb" type="number" min="5"></b-form-input>
       </b-modal>
     </div>
     <div>ルーム一覧</div>
@@ -142,7 +142,6 @@ export default class Room extends Vue {
       end: boolean;
       player1: {
         uid: string;
-        logs: string[][];
         commands: {
           previous: string[];
           now: string[];
@@ -151,13 +150,13 @@ export default class Room extends Vue {
       };
       player2: {
         uid: string | null;
-        logs: string[][];
         commands: {
           previous: string[];
           now: string[];
         };
         bomb: number;
       };
+      logs: string[];
       turn: boolean;
       initBomb: number;
       waitTime: number;
@@ -170,7 +169,6 @@ export default class Room extends Vue {
       end: false,
       player1: {
         uid: UserModule.uid,
-        logs: [],
         commands: {
           previous: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
           now: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL))
@@ -179,13 +177,13 @@ export default class Room extends Vue {
       },
       player2: {
         uid: null,
-        logs: [],
         commands: {
           previous: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL)),
           now: toCommandString(new Array(COMMAND_SIZE).fill(MOVE.NULL))
         },
         bomb: this.bomb
       },
+      logs: [],
       turn: true,
       initBomb: this.bomb,
       waitTime: this.waitTime,

@@ -1,6 +1,6 @@
 <template>
   <div id="game">
-    <b-modal id="resultModal" @ok="redoRoom" ok-only
+    <b-modal id="resultModal" @ok="redoRoom" ok-only no-close-on-backdrop
       ><div v-if="judge === JUDGE.DRAW">DRAW!!</div>
       <div
         v-else-if="
